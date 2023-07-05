@@ -1,4 +1,4 @@
-# AWS S3 integarion for Coralogix
+# AWS S3 integarion for Coralogixx
 
 This template were created automatically from coralogix/coralogix-aws-serverless.
 To make a change in the template go to the link below.
@@ -9,8 +9,8 @@ Coralogix provides a predefined Lambda function to easily forward your S3 logs s
 
 ## Prerequisites
 
-* AWS account (Your AWS user should have permissions to create lambdas and IAM roles).
-* Coralogix account.
+* AWS account (Your AWS user should have permissions to create lambdas and IAM roles).reresr
+* Coralogix account.asdas
 * AWS S3 bucket.
 
 ## Fields 
@@ -61,3 +61,23 @@ Coralogix provides a predefined Lambda function to easily forward your S3 logs s
 ## License
 
 This project is licensed under the Apache-2.0 License.
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test

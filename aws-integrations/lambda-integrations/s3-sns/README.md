@@ -14,7 +14,12 @@ Coralogix provides a predefined Lambda function to easily forward your S3 logs v
 * AWS SNS Topic.
 * AWS S3 bucket (This bucket should be clear of any Lambda triggers and should have a configured Event Notifications to the above SNS Topic).
 
-## Fields 
+## AWS Resource Manager Template Deploymentasdasd
+
+The S3 via SNS integration can be deployed basdasdy clicking the link below and signing into your AWS account:
+[Deployment link](https://serverlessrepo.aws.amazon.com/applications/eu-central-1/597078901540/Coralogix-S3-via-SNS)
+
+## Fields
 
 * **Application name** - The stack name of this application created via AWS CloudFormation.
 
@@ -59,3 +64,27 @@ Coralogix provides a predefined Lambda function to easily forward your S3 logs v
 ## License
 
 This project is licensed under the Apache-2.0 License.
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test

@@ -1,5 +1,10 @@
 # AWS cloud trail integarion for Coralogix
 
+This template were created automatically from coralogix/coralogix-aws-serverless.
+To make a change in the template go to the link below.
+
+https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/cloudtrail
+
 Coralogix provides a predefined Lambda function to easily forward your CloudTrail logs straight to the Coralogix platform.
 
 ## Prerequisites
@@ -8,7 +13,7 @@ Coralogix provides a predefined Lambda function to easily forward your CloudTrai
 * An AWS account.
 * A coralogix account.
 
-## Fields
+## Fields 
 
 **Application name** - The stack name of this application created via AWS CloudFormation.
 
@@ -46,3 +51,27 @@ Do not change the `FunctionMemorySize`, `FunctionTimeout` parameters.
 ## License
 
 This project is licensed under the Apache-2.0 License.
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test

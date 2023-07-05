@@ -1,13 +1,12 @@
 #Created automatically from coralogix/coralogix-aws-serverless
-#Link to the repo: https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/cloudtrail-sns
-#created automatically from coralogix/coralogix-aws-serverless
+#Link to the repo: https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/archive-reader
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Send CloudTrail logs from SNS bucket to Coralogix.
+Description: Import archived logs from S3 bucket to Coralogix.
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: Coralogix-CloudTrail-via-SNS
-    Description: Send CloudTrail logs from SNS bucket to Coralogix.another test testtests
+    Name: Coralogix-Archive-Readersdf
+    Description: Import archived logs from S3 bucket to Coralogix.tests
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
@@ -15,10 +14,12 @@ Metadata:
     Labels:
       - coralogix
       - logs
-      - cloudtrail
-      - sns
+      - s3
+      - archive
+      - import
+      - restore
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 1.0.2
+    SemanticVersion: 1.0.10
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-serverless
 Parameters:
   CoralogixRegion:
@@ -31,45 +32,10 @@ Parameters:
       - Singapore
       - US
     Default: Europe
-  CustomDomain:
-    Type: String
-    Description: The Coralogix custom domain
-    Default: ''
   PrivateKey:
     Type: String
     Description: The Coralogix private key which is used to validate your authenticity
     NoEcho: true
-  ApplicationName:
-    Type: String
-    Description: The name of your application
-    MinLength: 1
-    MaxLength: 64
-  SubsystemName:
-    Type: String
-    Description: The subsystem name of your application
-    MinLength: 1
-    MaxLength: 64
-  SNSTopicArn:
-    Type: String
-    Description: The ARN of SNS topic to subscribe
-    MinLength: 20
-    MaxLength: 2048
-  S3BucketName:
-    Type: String
-    Description: The name of the S3 bucket with CloudTrail logs to watch
-    AllowedPattern: '^[0-9A-Za-z\.\-_]*(?<!\.)$'
-    MinLength: 3
-    MaxLength: 63
-  S3KeyPrefix:
-    Type: String
-    Description: The S3 path prefix to watch
-    MaxLength: 1024
-    Default: 'AWSLogs/'
-  S3KeySuffix:
-    Type: String
-    Description: The S3 path suffix to watch
-    MaxLength: 1024
-    Default: '.json.gz'
   FunctionArchitecture:
     Type: String
     Description: Lambda function architecture, possible options are [x86_64, arm64]
@@ -82,13 +48,13 @@ Parameters:
     Description: Lambda function memory limit
     MinValue: 128
     MaxValue: 3008
-    Default: 1024
+    Default: 2048
   FunctionTimeout:
     Type: Number
     Description: Lambda function timeout limit
     MinValue: 30
     MaxValue: 900
-    Default: 300
+    Default: 600
   NotificationEmail:
     Type: String
     Description: Failure notification email address
@@ -112,15 +78,15 @@ Conditions:
       - Fn::Equals:
           - Ref: NotificationEmail
           - ''
-  IsRegionCustomUrlEmpty: !Not [!Equals [!Ref CustomDomain, ""]]
 Resources:
   LambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Description: Send logs from S3 bucket to Coralogix via SNS Trigger.
+      FunctionName: coralogix-archive-reader
+      Description: Import archived logs from S3 bucket to Coralogix.
       CodeUri:
         Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
-        Key: cloudtrail-sns.zip
+        Key: archive-reader.zip
       Handler: index.handler
       Runtime: nodejs16.x
       Architectures:
@@ -131,30 +97,38 @@ Resources:
         Ref: FunctionTimeout
       Environment:
         Variables:
-          CORALOGIX_URL: !If
-            - IsRegionCustomUrlEmpty
-            - !Ref CustomDomain
-            - !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
+          CORALOGIX_URL:
+            Fn::FindInMap:
+              - CoralogixRegionMap
+              - Ref: CoralogixRegion
+              - LogUrl
           private_key:
             Ref: PrivateKey
-          app_name:
-            Ref: ApplicationName
-          sub_name:
-            Ref: SubsystemName
-      Events:
-        SNSEvent:
-          Type: SNS
-          Properties:
-            Topic:
-              Ref: SNSTopicArn
+      Policies:
+        - S3ReadPolicy:
+            BucketName:
+              Fn::Sub: "coralogix-import-${AWS::AccountId}-${AWS::Region}"
       EventInvokeConfig:
         DestinationConfig:
           OnFailure:
             Type: SNS
-      Policies:
-        - S3ReadPolicy:
-            BucketName:
-              Ref: S3BucketName
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: LambdaBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .csv.gz
+  LambdaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: "coralogix-import-${AWS::AccountId}-${AWS::Region}"
   LambdaFunctionNotificationSubscription:
     Type: AWS::SNS::Subscription
     Condition: IsNotificationEnabled
@@ -164,3 +138,10 @@ Resources:
         Ref: NotificationEmail
       TopicArn:
         Ref: LambdaFunction.DestinationTopic
+Outputs:
+  LambdaBucketName:
+    Description: Information about the value
+    Value:
+      Ref: LambdaBucket
+    Export:
+      Name: CORALOGIX-IMPORT-BUCKET

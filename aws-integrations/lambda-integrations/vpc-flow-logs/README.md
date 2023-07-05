@@ -1,5 +1,10 @@
 # Coralogix-VPC-Flow-Logs
 
+This template were created automatically from coralogix/coralogix-aws-serverless.
+To make a change in the template go to the link below.
+
+https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/vpc-flow-logs
+
 This application retrieves **VPC Flow** logs from S3 and sends them to your **Coralogix** account.
 
 ## Prerequisites
@@ -8,9 +13,8 @@ This application retrieves **VPC Flow** logs from S3 and sends them to your **Co
 * An AWS account.
 * A coralogix account.
 
-The application should be installed in the same AWS region as the VPC and the S3.
 
-## Fields
+## Fields 
 
 **Application name** - The stack name of this application created via AWS CloudFormation.
 
@@ -48,3 +52,28 @@ The application should be installed in the same AWS region as the VPC and the S3
 ## License
 
 This project is licensed under the Apache-2.0 License.
+
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
