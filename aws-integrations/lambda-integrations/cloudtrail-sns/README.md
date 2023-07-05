@@ -1,4 +1,4 @@
-# AWS CloudTrail-SNS integration for Coralogix
+# AWS CloudTrail-SNS integration for Coralogixx
 
 This template were created automatically from coralogix/coralogix-aws-serverless.
 To make a change in the template go to the link below.
@@ -46,3 +46,27 @@ Do not change the `FunctionMemorySize`, `FunctionTimeout` parameters.
 ## License
 
 This project is licensed under the Apache-2.0 License.
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test
+test

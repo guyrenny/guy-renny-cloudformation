@@ -1,12 +1,13 @@
 #Created automatically from coralogix/coralogix-aws-serverless
 #Link to the repo: https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/cloudtrail-sns
+#created automatically from coralogix/coralogix-aws-serverless
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Send CloudTrail logs from SNS bucket to Coralogix.
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: Coralogix-CloudTrail-via-SNS
-    Description: Send CloudTrail logs from SNS bucket to Coralogix.
+    Description: Send CloudTrail logs from SNS bucket to Coralogix.another test test
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
@@ -17,7 +18,7 @@ Metadata:
       - cloudtrail
       - sns
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 1.0.3
+    SemanticVersion: 1.0.2
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-serverless
 Parameters:
   CoralogixRegion:
@@ -96,15 +97,15 @@ Parameters:
 Mappings:
   CoralogixRegionMap:
     Europe:
-      LogUrl: coralogix.com
+      LogUrl: https://ingress.coralogix.com/api/v1/logs
     Europe2:
-      LogUrl: eu2.coralogix.com
+      LogUrl: https://ingress.eu2.coralogix.com/api/v1/logs
     India:
-      LogUrl: coralogix.in
+      LogUrl: https://ingress.coralogix.in/api/v1/logs
     Singapore:
-      LogUrl: coralogixsg.com
+      LogUrl: https://ingress.coralogixsg.com/api/v1/logs
     US:
-      LogUrl: coralogix.us
+      LogUrl: https://ingress.coralogix.us/api/v1/logs
 Conditions:
   IsNotificationEnabled:
     Fn::Not:
@@ -132,12 +133,8 @@ Resources:
         Variables:
           CORALOGIX_URL: !If
             - IsRegionCustomUrlEmpty
-            - !Sub 'https://ingress.${CustomDomain}/api/v1/logs'
-            - !Sub
-              - '${Prefix}${Domain}${Suffix}'
-              - Prefix: https://ingress.
-                Domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
-                Suffix: /api/v1/logs
+            - !Ref CustomDomain
+            - !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
           private_key:
             Ref: PrivateKey
           app_name:
