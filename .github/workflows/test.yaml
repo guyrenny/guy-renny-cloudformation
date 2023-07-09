@@ -28,7 +28,9 @@ jobs:
 
           # Print each element of the array
           for element in "${array[@]}"; do
-            echo "$element" | grep '^aws-integrations/'
+          if [[ $element == aws-integrations/* ]]; then
+            echo "$element"
+          fi
           done
 
   # Get-matrix:
