@@ -66,10 +66,5 @@ jobs:
   #       export PACKAGES=$(jq -r '.[].name' matrix.js | jq -rcnR '[inputs]')
   #       echo "packages=$PACKAGES" >> $GITHUB_ENV
 
-  # pull-request:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v2
 
 
