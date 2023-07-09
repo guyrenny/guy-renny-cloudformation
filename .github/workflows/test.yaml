@@ -21,7 +21,7 @@ jobs:
         run: |
           string="${{ steps.changed-files.outputs.all_changed_files }}"
           result=()
-
+          chmod +x code.sh
           # Split the string into an array using whitespace as the delimiter
           read -ra array <<< "$string"
 
@@ -32,10 +32,9 @@ jobs:
               result+=("$integration")
             fi
           done
-
-          # Print the elements of the result array
           for element in "${result[@]}"; do
-            echo "$element"
+            ./code.sh aws-integrations/lambda-integrations/$element/template.yaml
+            cat aws-integrations/lambda-integrations/$element/template.yaml
           done
 
 
