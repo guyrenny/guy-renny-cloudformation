@@ -1,0 +1,28 @@
+
+  # Used as a bridge because CF doesn't allow for conditional depends on clauses.
+  NonNotifierResourcesAreReady:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Metadata:
+      LambdaFunctionNotificationSubscriptionReady: !If [ IsNotificationEnabled, !Ref LambdaFunctionNotificationSubscription, "" ]
+
+  IntegrationStatusNotifier:
+    Type: Custom::IntegrationsServiceNotifier
+    DependsOn:
+      - NonNotifierResourcesAreReady
+      - LambdaFunction # Can depend on it directly because it's not conditional.
+    Properties:
+      #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
+      ServiceToken: !Sub "arn:aws:lambda:${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier"
+      IntegrationId: !Ref IntegrationId
+      CoralogixDomain: !If
+        - IsRegionCustomUrlEmpty
+        - !Ref CustomDomain
+        - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+      CoralogixApiKey: !Ref PrivateKey
+
+      # Parameters to track
+      IntegrationNameField: !Ref "AWS::StackName"
+      SubsystemField: !Ref SubsystemName
+      ApplicationNameField: !Ref ApplicationName
+      S3BucketNameField: !Ref S3BucketName
+      SNSTopicArnField: !Ref SNSTopicArn

@@ -32,10 +32,11 @@ jobs:
               result+=("$integration")
             fi
           done
-          mkdir modules
+          mkdir integrations/
           for element in "${result[@]}"; do
-            ./code.sh aws-integrations/lambda-integrations/$element/template.yaml
-            mv aws-integrations/lambda-integrations/$element/template.yaml modules/
+            ./code.sh aws-integrations/lambda-integrations/$element/template.yaml $element
+            mkdir integrations/$element/v0.0.1/
+            mv aws-integrations/lambda-integrations/$element/template.yaml integrations/$element/v0.0.1/
           done
 
       - name: Create pull request
@@ -43,7 +44,7 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.DESTINATION_REPO_TOKEN }}
         with:
-          source_folder: 'modules'
+          source_folder: 'integrations'
           destination_repo: 'guyrenny/test'
           # destination_folder: 'modules'
           destination_head_branch: 'branch-name'
