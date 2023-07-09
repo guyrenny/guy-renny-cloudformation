@@ -15,22 +15,27 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v37
-        
-        # To compare changes between the current commit and the last pushed remote commit set `since_last_remote_commit: true`. e.g
-        # with:
-        #   since_last_remote_commit: true 
 
       - name: Filter Changed Files
         id: filtered-files
         run: |
           string="${{ steps.changed-files.outputs.all_changed_files }}"
+          result=()
+
+          # Split the string into an array using whitespace as the delimiter
           read -ra array <<< "$string"
 
-          # Print each element of the array
+          # Loop through the array elements
           for element in "${array[@]}"; do
-          if [[ $element == aws-integrations/* ]]; then
-            echo "$element" | xargs -n1 dirname | xargs -n1 basename
-          fi
+            if [[ $element == aws-integrations/* ]]; then
+              integration=$(echo "$element" | xargs -n1 dirname | xargs -n1 basename)
+              result+=("$integration")
+            fi
+          done
+
+          # Print the elements of the result array
+          for element in "${result[@]}"; do
+            echo "$element"
           done
 
 
