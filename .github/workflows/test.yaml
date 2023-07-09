@@ -23,9 +23,9 @@ jobs:
       - name: Filter Changed Files
         id: filtered-files
         run: |
-          echo "::set-output name=changed-files::$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep '^aws-integrations/' | cut -d' ' -f2-)"
+          echo "::set-output name=changed-files::$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep '^aws-integrations/')"
         env:
-          specific-directory: '<specific-directory>' # Replace with the specific directory you want to filter
+          specific-directory: 'aws-integrations' # Replace with the specific directory you want to filter
 
       - name: Print Changed Files
         run: echo "${{ steps.filtered-files.outputs.changed-files }}"
