@@ -1,0 +1,60 @@
+name: Push File
+
+on: push
+
+jobs:
+
+  job2:
+    runs-on: ubuntu-latest  # windows-latest | macos-latest
+    name: Test changed-files
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+
+      # Example 1
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v37
+        
+        # To compare changes between the current commit and the last pushed remote commit set `since_last_remote_commit: true`. e.g
+        # with:
+        #   since_last_remote_commit: true 
+
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+
+  # Get-matrix:
+  #   runs-on: ubuntu-latest
+  #   if: github.event.pull_request.merged == true
+  #   outputs:
+  #     packages: ${{ env.packages }}
+  #   steps:
+
+  #   - uses: actions/checkout@v2
+  #   - name: Read matrix YAML
+  #     id: read-matrix
+  #     run: |
+  #       export PACKAGES=$(jq -r '.[].name' matrix.js | jq -rcnR '[inputs]')
+  #       echo "packages=$PACKAGES" >> $GITHUB_ENV
+
+  # pull-request:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+
+  #   - name: Create pull request
+  #     uses: paygoc6/action-pull-request-another-repo@v1.0.1
+  #     env:
+  #       API_TOKEN_GITHUB: ${{ secrets.DESTINATION_REPO_TOKEN }}
+  #     with:
+  #       source_folder: 'src/s3'
+  #       destination_repo: 'guyrenny/test'
+  #       destination_folder: 'modules'
+  #       destination_head_branch: 'branch-name'
+  #       user_email: 'github-actions[bot]@users.noreply.github.com'
+  #       user_name: 'github-actions[bot]'
