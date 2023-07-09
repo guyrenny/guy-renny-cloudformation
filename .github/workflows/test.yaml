@@ -40,15 +40,13 @@ jobs:
           done
 
       - name: Create pull request
-        uses: jacopocarlini/action-pull-request-another-repo@main
+        uses: paygoc6/action-pull-request-another-repo@v1.0.1
         env:
           API_TOKEN_GITHUB: ${{ secrets.DESTINATION_REPO_TOKEN }}
         with:
-          allow_force_push: 'true'
           source_folder: 'integrations'
-          destination_folder: 'integrations'
           destination_repo: 'guyrenny/test'
-          destination_head_branch: 'branch-name'
+          destination_head_branch: 'branch-name-${{ github.event.pull_request.number }}'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           user_name: 'github-actions[bot]'
 
