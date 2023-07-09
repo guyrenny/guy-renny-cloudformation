@@ -46,6 +46,7 @@ jobs:
         with:
           allow_force_push: 'true'
           source_folder: 'integrations'
+          destination_folder: 'integrations'
           destination_repo: 'guyrenny/test'
           destination_head_branch: 'branch-name'
           user_email: 'github-actions[bot]@users.noreply.github.com'
