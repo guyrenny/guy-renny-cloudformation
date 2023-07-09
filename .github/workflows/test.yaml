@@ -35,7 +35,7 @@ jobs:
           mkdir integrations/
           for element in "${result[@]}"; do
             ./code.sh aws-integrations/lambda-integrations/$element/template.yaml $element
-            mkdir integrations/$element/v0.0.1/
+            mkdir -p integrations/$element/v0.0.1/
             mv aws-integrations/lambda-integrations/$element/template.yaml integrations/$element/v0.0.1/
           done
 
