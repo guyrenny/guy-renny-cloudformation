@@ -33,11 +33,16 @@ jobs:
             fi
           done
           mkdir integrations/
-          for element in "${changed_integrations[@]}"; do
-            ./code.sh aws-integrations/lambda-integrations/$element/template.yaml $element
-            mkdir -p integrations/$element/v0.0.1/
-            mv aws-integrations/lambda-integrations/$element/template.yaml integrations/$element/v0.0.1/
+          for integration in "${changed_integrations[@]}"; do
+            ./code.sh aws-integrations/lambda-integrations/$integration/template.yaml $integration
+            mkdir -p integrations/$integration/v0.0.1/
+            mv aws-integrations/lambda-integrations/$integration/template.yaml integrations/$integration/v0.0.1/
           done
+
+      - name: Generate random string
+        id: random
+        run: |
+          echo "::set-output name=branch_suffix::$(uuidgen | cut -d '-' -f 1)"
 
       - name: Create pull request
         uses: paygoc6/action-pull-request-another-repo@v1.0.1
@@ -46,7 +51,7 @@ jobs:
         with:
           source_folder: 'integrations'
           destination_repo: 'guyrenny/test'
-          destination_head_branch: 'branch-name-${{ github.event.pull_request.number }}'
+          destination_head_branch: 'branch-name-${{ steps.random.outputs.branch_suffix }}'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           user_name: 'github-actions[bot]'
 
