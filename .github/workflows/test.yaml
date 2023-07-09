@@ -19,21 +19,21 @@ jobs:
       - name: Filter Changed Files
         id: filtered-files
         run: |
-          string="${{ steps.changed-files.outputs.all_changed_files }}"
-          result=()
+          changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
+          changed_integrations=()
           chmod +x code.sh
           # Split the string into an array using whitespace as the delimiter
-          read -ra array <<< "$string"
+          read -ra array <<< "$changed_files_string"
 
           # Loop through the array elements
           for element in "${array[@]}"; do
             if [[ $element == aws-integrations/* ]]; then
               integration=$(echo "$element" | xargs -n1 dirname | xargs -n1 basename)
-              result+=("$integration")
+              changed_integrations+=("$integration")
             fi
           done
           mkdir integrations/
-          for element in "${result[@]}"; do
+          for element in "${changed_integrations[@]}"; do
             ./code.sh aws-integrations/lambda-integrations/$element/template.yaml $element
             mkdir -p integrations/$element/v0.0.1/
             mv aws-integrations/lambda-integrations/$element/template.yaml integrations/$element/v0.0.1/
@@ -46,25 +46,9 @@ jobs:
         with:
           source_folder: 'integrations'
           destination_repo: 'guyrenny/test'
-          # destination_folder: 'modules'
-          destination_head_branch: 'branch-name'
+          destination_head_branch: 'sync-integration'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           user_name: 'github-actions[bot]'
-
-
-  # Get-matrix:
-  #   runs-on: ubuntu-latest
-  #   if: github.event.pull_request.merged == true
-  #   outputs:
-  #     packages: ${{ env.packages }}
-  #   steps:
-
-  #   - uses: actions/checkout@v2
-  #   - name: Read matrix YAML
-  #     id: read-matrix
-  #     run: |
-  #       export PACKAGES=$(jq -r '.[].name' matrix.js | jq -rcnR '[inputs]')
-  #       echo "packages=$PACKAGES" >> $GITHUB_ENV
 
 
 
