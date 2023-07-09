@@ -23,12 +23,13 @@ jobs:
       - name: Filter Changed Files
         id: filtered-files
         run: |
-          echo "::set-output name=changed-files::$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep '^aws-integrations/')"
-        env:
-          specific-directory: 'aws-integrations' # Replace with the specific directory you want to filter
+          string="${{ steps.changed-files.outputs.all_changed_files }}"
+          read -ra array <<< "$string"
 
-      - name: Print Changed Files
-        run: echo "${{ steps.filtered-files.outputs.changed-files }}"
+          # Print each element of the array
+          for element in "${array[@]}"; do
+            echo "$element" | grep '^aws-integrations/'
+          done
 
   # Get-matrix:
   #   runs-on: ubuntu-latest
