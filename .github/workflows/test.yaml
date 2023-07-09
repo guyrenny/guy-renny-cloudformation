@@ -40,7 +40,7 @@ jobs:
           done
 
       - name: Create pull request
-        uses: paygoc6/action-pull-request-another-repo@v1.0.1
+        uses: jacopocarlini/action-pull-request-another-repo@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.DESTINATION_REPO_TOKEN }}
         with:
