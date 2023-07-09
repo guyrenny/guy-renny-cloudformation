@@ -44,9 +44,10 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.DESTINATION_REPO_TOKEN }}
         with:
+          allow_force_push: 'true'
           source_folder: 'integrations'
           destination_repo: 'guyrenny/test'
-          destination_head_branch: 'sync-integration'
+          destination_head_branch: 'branch-name'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           user_name: 'github-actions[bot]'
 
