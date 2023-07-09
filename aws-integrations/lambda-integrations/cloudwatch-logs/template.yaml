@@ -16,8 +16,37 @@ Metadata:
       - logs
       - cloudwatch
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 1.0.20
+    SemanticVersion: 1.0.22
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-serverless
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Coralogix configuration
+        Parameters:
+          - ApplicationName
+          - SubsystemName
+          - ApiKey
+          - CoralogixRegion
+          - CustomDomain
+      - Label:
+          default: Integration configuration
+        Parameters:
+          - CloudWatchLogGroupName
+          - NotificationEmail
+          - NewlinePattern
+      - Label:
+          default: Lambda configuration
+        Parameters:
+          - FunctionArchitecture
+          - FunctionMemorySize
+          - FunctionTimeout
+          - SamplingRate
+          - BufferCharset
+      - Label:
+          default: Security configuration
+        Parameters:
+          - SsmEnabled
+          - LayerARN
 Parameters:
   LayerARN:
     Type: String
@@ -37,9 +66,9 @@ Parameters:
       - Singapore
       - US
     Default: Europe
-  PrivateKey:
+  ApiKey:
     Type: String
-    Description: The Coralogix private key which is used to validate your authenticity
+    Description: The Coralogix Api key which is used to validate your authenticity
     NoEcho: true
   ApplicationName:
     Type: String
@@ -104,15 +133,15 @@ Parameters:
 Mappings:
   CoralogixRegionMap:
     Europe:
-      LogUrl: ingress.coralogix.com
+      LogUrl: coralogix.com
     Europe2:
-      LogUrl: ingress.eu2.coralogix.com
+      LogUrl: eu2.coralogix.com
     India:
-      LogUrl: ingress.coralogix.in
+      LogUrl: coralogix.in
     Singapore:
-      LogUrl: ingress.coralogixsg.com
+      LogUrl: coralogixsg.com
     US:
-      LogUrl: ingress.coralogix.us
+      LogUrl: coralogix.us
 Conditions:
   IsNotificationEnabled:
     Fn::Not:
@@ -149,10 +178,13 @@ Resources:
         Variables:
           CORALOGIX_URL: !If
             - IsRegionCustomUrlEmpty
-            - !Ref CustomDomain
-            - !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
+            - !Sub 'ingress.${CustomDomain}'
+            - !Sub
+              - '${Prefix}${Domain}'
+              - Prefix: ingress.
+                Domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
           private_key:
-            Ref: PrivateKey
+            Ref: ApiKey
           app_name:
             Ref: ApplicationName
           sub_name:
@@ -196,8 +228,11 @@ Resources:
         Variables:
           CORALOGIX_URL: !If
             - IsRegionCustomUrlEmpty
-            - !Ref CustomDomain
-            - !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
+            - !Sub 'ingress.${CustomDomain}'
+            - !Sub
+              - '${Prefix}${Domain}'
+              - Prefix: ingress.
+                Domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, LogUrl]
           AWS_LAMBDA_EXEC_WRAPPER: /opt/wrapper.sh
           app_name:
             Ref: ApplicationName
@@ -228,7 +263,7 @@ Resources:
       Name: !Sub
         - 'lambda/coralogix/${AWS::Region}/${function}'
         - function: !Ref LambdaFunctionSsm
-      SecretString: !Ref PrivateKey
+      SecretString: !Ref ApiKey
   LambdaFunctionNotificationSubscription:
     Type: AWS::SNS::Subscription
     Condition: IsNotificationEnabled

@@ -22,16 +22,16 @@ jobs:
           changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
           changed_integrations=()
           chmod +x code.sh
-          # Split the string into an array using whitespace as the delimiter
-          read -ra array <<< "$changed_files_string"
+          # Split the string into an changed_files_array using whitespace as the delimiter
+          read -ra changed_files_array <<< "$changed_files_string"
 
-          # Loop through the array elements
-          for element in "${array[@]}"; do
-            if [[ $element == aws-integrations/* ]]; then
-              integration=$(echo "$element" | xargs -n1 dirname | xargs -n1 basename)
+          for changed_file in "${changed_files_array[@]}"; do
+            if [[ $changed_file == aws-integrations/* ]]; then
+              integration=$(echo "$changed_file" | xargs -n1 dirname | xargs -n1 basename)
               changed_integrations+=("$integration")
             fi
           done
+          
           mkdir integrations/
           for integration in "${changed_integrations[@]}"; do
             ./code.sh aws-integrations/lambda-integrations/$integration/template.yaml $integration
@@ -42,7 +42,7 @@ jobs:
       - name: Generate random string
         id: random
         run: |
-          echo "::set-output name=branch_suffix::$(uuidgen | cut -d '-' -f 1)"
+          echo "::set-output name=cloudformation_sync::$(uuidgen | cut -d '-' -f 1)"
 
       - name: Create pull request
         uses: paygoc6/action-pull-request-another-repo@v1.0.1
@@ -51,7 +51,7 @@ jobs:
         with:
           source_folder: 'integrations'
           destination_repo: 'guyrenny/test'
-          destination_head_branch: 'branch-name-${{ steps.random.outputs.branch_suffix }}'
+          destination_head_branch: 'cloudformation-sync-${{ steps.random.outputs.cloudformation_sync }}'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           user_name: 'github-actions[bot]'
 
