@@ -1,10 +1,8 @@
-name: Push File
+name: Sunc integration-definitions
 
 on: push
-
 jobs:
-
-  job2:
+  Crreate_pr:
     runs-on: ubuntu-latest
     name: Test changed-files
     steps:
@@ -22,7 +20,6 @@ jobs:
           changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
           changed_integrations=()
           chmod +x code.sh
-          # Split the string into an changed_files_array using whitespace as the delimiter
           read -ra changed_files_array <<< "$changed_files_string"
 
           for changed_file in "${changed_files_array[@]}"; do
@@ -31,7 +28,7 @@ jobs:
               changed_integrations+=("$integration")
             fi
           done
-          
+
           mkdir integrations/
           for integration in "${changed_integrations[@]}"; do
             ./code.sh aws-integrations/lambda-integrations/$integration/template.yaml $integration
