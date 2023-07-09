@@ -15,7 +15,6 @@
       "name": "cloudtrail-sns",
       "path": "src/cloudtrail-sns/**"
     },
-
     {
       "name": "cloudwatch-logs",
       "path": "src/cloudwatch-logs/**"
