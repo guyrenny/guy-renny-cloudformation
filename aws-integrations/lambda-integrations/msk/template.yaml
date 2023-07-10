@@ -17,7 +17,7 @@ Metadata:
       - apache
       - kafka
       - msk
-      - streamm
+      - stream
     HomePageUrl: https://coralogix.com
     SemanticVersion: 1.0.8
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-serverless
