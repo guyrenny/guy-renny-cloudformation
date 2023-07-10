@@ -5,6 +5,8 @@ jobs:
   Crreate_pr:
     runs-on: ubuntu-latest
     name: Test changed-files
+    env:
+      integration_list: 's3-sns,cloudtrail,cloudwatch-logs,s3,cloudtrail-sns,vpc-flow-logs'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,7 +27,9 @@ jobs:
           for changed_file in "${changed_files_array[@]}"; do
             if [[ $changed_file == aws-integrations/* ]]; then
               integration=$(echo "$changed_file" | xargs -n1 dirname | xargs -n1 basename)
-              changed_integrations+=("$integration")
+              if echo "$integration_list" | grep -q "$integration"; then
+                changed_integrations+=("$integration")
+              fi
             fi
           done
 
