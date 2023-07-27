@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-08
+AWSTemplateFormatVersion: 2010-09-07
 Description: 'CloudFormation template for creating archive s3 bucket for metrics and logs (Note: buckets are created in the same region the cloudformation is running) the template can run only on the following regions eu-west-1,eu-north-1,ap-southeast-1,ap-south-1,us-east-2'
 Parameters:
   LogsBucketName:
