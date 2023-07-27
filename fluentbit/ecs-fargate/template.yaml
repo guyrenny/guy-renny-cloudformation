@@ -1,5 +1,5 @@
 Description: |
-  This template is an example of a Fluentbit container running on ECS Fargate as a sidecar to an App...
+  This template is an example of a Fluentbit container running on ECS Fargate as a sidecar to an App.....
   This tempalte is not intented to be deployed directly, but rather it is expected that it will be used
   as an introduction to the concepts of Fluentbit sidecars for logs collection on ECS Fargate..
   
