@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: The template used to create an Otel ECS Service from on an ECS Console.ץץ
+Description: The template used to create an Otel ECS Service from on an ECS Console.
 
 Parameters:
   ClusterName:
