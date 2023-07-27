@@ -5,8 +5,8 @@ on:
   push:
     branches: [master]
     paths:
-      - "**/yaml"
-      - "**/yml"
+      - "**/*.yaml"
+      - "**/*.yml"
       
 
 env:
