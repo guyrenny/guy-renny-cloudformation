@@ -41,7 +41,8 @@ jobs:
         run: |
           changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
           read -ra changed_files_array <<< "$changed_files_string"
+          integration=$(echo "$changed_file" | xargs -n1 dirname | xargs -n1 basename)
           for changed_file in "${changed_files_array[@]}"; do
             echo $changed_file
-            aws s3 cp  $changed_file s3://gr-integrations-aws-testing/test-run.yml
+            aws s3 cp  $changed_file s3://gr-integrations-aws-testing/${integration}.yml
           done
