@@ -4,8 +4,9 @@ name: Release
 on:
   push:
     branches: [master]
-    path:
-      **/.yaml
+    paths:
+      - "**/yaml"
+      - "**/yml"
       
 
 env:
