@@ -1,0 +1,46 @@
+
+name: Release
+
+on:
+  push:
+    branches: [master]
+    path:
+      **/.yaml
+      
+
+env:
+  AWS_DEFAULT_REGION: eu-central-1
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ env.packages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+    
+      - name: Configure AWS credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TESTING_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TESTING_SECRET_ACCESS_KEY }}
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV 
+          
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v37
+
+      - name: Upload integrations files to s3
+        run: |
+          changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
+          read -ra changed_files_array <<< "$changed_files_string"
+          for changed_file in "${changed_files_array[@]}"; do
+            echo $changed_file
+            aws s3 cp  $changed_file s3://gr-integrations-aws-testing/test-run.yml
+          done
