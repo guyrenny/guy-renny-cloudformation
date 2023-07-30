@@ -1,5 +1,6 @@
 # AWS cloud trail integarion for Coralogix
 
+
 This template were created automatically from coralogix/coralogix-aws-serverless.
 To make a change in the template go to the link below.
 
