@@ -5,7 +5,7 @@ on:
     branches: [master]
     paths:
       - "**/template.yaml"
-      - "**/template.yml"
+      - "**/template.yml" 
 jobs:
   Publish:
     name: publish
