@@ -19,14 +19,6 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-    
-#       - name: Configure AWS credentials
-#         env:
-#           AWS_ACCESS_KEY_ID: ${{ secrets.PUBLISH_ACCESS_KEY }}
-#           AWS_SECRET_ACCESS_KEY: ${{ secrets.PUBLISH_SECRET_ACCESS_KEY }}
-#         run: |
-#           echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
-#           echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV 
 
       - uses: aws-actions/configure-aws-credentials@v2
         with:
