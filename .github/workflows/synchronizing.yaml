@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: replace_template
-          path: ./replace_template.sh
+          path: scripts/replace_template.sh
 
   create_pr:
     runs-on: ubuntu-latest
@@ -70,8 +70,8 @@ jobs:
       - name: Checkout destination repository
         uses: actions/checkout@v2
         with:
-          repository: coralogix/integration-definitions
-          token: ${{ secrets.GH_TOKEN }}
+          repository: guyrenny/test
+          token: ${{ secrets.DESTINATION_REPO_TOKEN }}
 
       - name: Create template-directory
         run: mkdir ./template-directory
