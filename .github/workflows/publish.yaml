@@ -33,6 +33,6 @@ jobs:
           read -ra changed_files_array <<< "$changed_files_string"
           for changed_template in "${changed_files_array[@]}"; do
             if [[ $changed_template == */template.* ]]; then
-              aws s3 cp  $changed_template s3://cgx-cloudformation-templates/${changed_template}
+              aws s3 cp  $changed_template s3://gr-integrartion-test-bucket/${changed_template}
             fi
           done
