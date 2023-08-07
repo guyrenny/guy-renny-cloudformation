@@ -1,5 +1,5 @@
 #Created automatically from coralogix/coralogix-aws-serverless
-#Link to the repo: https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/cloudwatch-logs
+#Link to the repo: https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/cloudwatch-logs,test
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Send CloudWatch logs to Coralogix.
