@@ -70,8 +70,8 @@ jobs:
       - name: Checkout destination repository
         uses: actions/checkout@v2
         with:
-          repository: coralogix/integration-definitions
-          token: ${{ secrets.GH_TOKEN }}
+          repository: guyrenny/test
+          token: ${{ secrets.DESTINATION_REPO_TOKEN }}
 
       - name: Create template-directory
         run: mkdir ./template-directory
@@ -138,4 +138,4 @@ jobs:
             gh pr create --base master --head "${branch_name}" --title "${Pr_name}" --body "This pull request syncs the changes from the cloudformation repo to this repo."
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DESTINATION_REPO_TOKEN }}
