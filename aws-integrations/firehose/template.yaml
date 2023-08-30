@@ -11,7 +11,7 @@ Parameters:
       - stockholm
       - india
       - singapore
-      - us
+      - us 
       - us2
     Default: ireland
   CustomUrl:
