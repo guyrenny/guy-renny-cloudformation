@@ -104,6 +104,8 @@ jobs:
             branch_name=update_integration-branch
           fi
           echo $branch_name
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git pull origin master
           git checkout -b ${branch_name}
           sync_branch_exists=$(git ls-remote --heads origin "${branch_name}" | wc -l)
@@ -128,8 +130,6 @@ jobs:
           rm replace_template.sh
           rm -rf template-directory
           rm changed-integration.txt
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
           git add .
           git commit -m "Copy file from cloudformation repository"
           git push --set-upstream origin ${branch_name}
