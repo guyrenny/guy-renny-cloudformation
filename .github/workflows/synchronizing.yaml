@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     name: upload files
     env:
-      integration_list: "s3,s3-sns,cloudtrail,cloudtrail-sns,cloudwatch-logs,vpc-flow-logs,resource-metadata"
+      integration_list: "s3,s3-sns,cloudtrail,cloudtrail-sns,cloudwatch-logs,vpc-flow-logs,resource-metadata,firehose"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -29,12 +29,12 @@ jobs:
         run: |
           changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
           read -ra changed_files_array <<< "$changed_files_string"
-
+          echo $changed_file
           for changed_file in "${changed_files_array[@]}"; do
             integration=$(echo "$changed_file" | xargs -n1 dirname | xargs -n1 basename)
-            if [[ $changed_file == "aws-integrations/lambda-integrations/$integration/template.yaml" ]]; then
+            if [[ $changed_file == "**/template.yaml" ]]; then
               if echo "$integration_list" | grep -q "$integration"; then
-                mv aws-integrations/lambda-integrations/$integration/template.yaml template-directory/${integration}-template.yaml
+                mv $changed_file template-directory/${integration}-template.yaml
                 echo $integration >> changed-integration.txt
               fi
             fi
