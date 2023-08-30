@@ -34,7 +34,7 @@ jobs:
             echo $integration
             echo 2
             echo $changed_file
-            if [[ $changed_file == "*/$integration/template.yaml" ]]; then
+            if [[ $changed_file == **"/$integration/template.yaml" ]]; then
               if echo "$integration_list" | grep -q "$integration"; then
                 mv $changed_file template-directory/${integration}-template.yaml
                 echo $integration >> changed-integration.txt

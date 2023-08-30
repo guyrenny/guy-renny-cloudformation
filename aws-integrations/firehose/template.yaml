@@ -718,7 +718,7 @@ Outputs:
     Value:
       !GetAtt CoralogixDeliveryLogsStream.Arn
   CloudWatchLogsRoleARN:   
-    Condition: IsLogsEnabled
+    Condition: IsLogsEnabled 
     Description: The ARN for your CloudWatch Logs role to write to your delivery stream,
       use this as the role-arn when adding CloudWatch Logs subscription filters
     Value:
