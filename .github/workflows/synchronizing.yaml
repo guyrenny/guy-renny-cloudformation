@@ -29,10 +29,10 @@ jobs:
         run: |
           changed_files_string="${{ steps.changed-files.outputs.all_changed_files }}"
           read -ra changed_files_array <<< "$changed_files_string"
-          echo $changed_file
           for changed_file in "${changed_files_array[@]}"; do
             integration=$(echo "$changed_file" | xargs -n1 dirname | xargs -n1 basename)
             echo $integration
+            echo $changed_file
             if [[ $changed_file == "**/template.yaml" ]]; then
               if echo "$integration_list" | grep -q "$integration"; then
                 mv $changed_file template-directory/${integration}-template.yaml
