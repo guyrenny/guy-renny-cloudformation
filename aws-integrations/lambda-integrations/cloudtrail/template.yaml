@@ -37,7 +37,7 @@ Metadata:
           - S3KeySuffix
           - NotificationEmail
       - Label:
-          default: Lambda configuration
+          default: Lambda configuration 
         Parameters:
           - FunctionArchitecture
           - FunctionMemorySize
