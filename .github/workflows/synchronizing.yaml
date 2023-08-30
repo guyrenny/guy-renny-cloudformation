@@ -32,10 +32,11 @@ jobs:
           for changed_file in "${changed_files_array[@]}"; do
             integration=$(echo "$changed_file" | xargs -n1 dirname | xargs -n1 basename)
             echo $integration
+            echo 2
             echo $changed_file
-            if [[ $changed_file == "**/template.yaml" ]]; then
+            if [[ $changed_file == "aws-integrations/lambda-integrations/$integration/template.yaml" ]]; then
               if echo "$integration_list" | grep -q "$integration"; then
-                mv $changed_file template-directory/${integration}-template.yaml
+                mv aws-integrations/lambda-integrations/$integration/template.yaml template-directory/${integration}-template.yaml
                 echo $integration >> changed-integration.txt
               fi
             fi
