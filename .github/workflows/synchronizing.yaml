@@ -103,6 +103,7 @@ jobs:
           else
             branch_name=update_integration-branch
           fi
+          echo $branch_name
           git pull origin master
           git checkout -b ${branch_name}
           sync_branch_exists=$(git ls-remote --heads origin "${branch_name}" | wc -l)
