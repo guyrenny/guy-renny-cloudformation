@@ -716,7 +716,7 @@ Outputs:
     Description: The ARN for your Kinesis Firehose Delivery Stream, use this as the
       destination when adding CloudWatch Logs subscription filters
     Value:
-      !GetAtt CoralogixDeliveryLogsStream.Arn  
+      !GetAtt CoralogixDeliveryLogsStream.Arn
   CloudWatchLogsRoleARN:  
     Condition: IsLogsEnabled
     Description: The ARN for your CloudWatch Logs role to write to your delivery stream,
