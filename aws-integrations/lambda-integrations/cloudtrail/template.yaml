@@ -9,15 +9,15 @@ Metadata:
     Description: Send CloudTrail logs from S3 bucket to Coralogix.
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
-    LicenseUrl: LICENSE  
-    ReadmeUrl: README.md 
-    Labels: 
+    LicenseUrl: LICENSE
+    ReadmeUrl: README.md
+    Labels:
       - coralogix
       - logs
       - cloudtrail
       - s3
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 1.0.23
+    SemanticVersion: 1.0.24
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-serverless
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -37,7 +37,7 @@ Metadata:
           - S3KeySuffix
           - NotificationEmail
       - Label:
-          default: Lambda configuration 
+          default: Lambda configuration
         Parameters:
           - FunctionArchitecture
           - FunctionMemorySize
