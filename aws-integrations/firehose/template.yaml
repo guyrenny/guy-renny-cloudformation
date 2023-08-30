@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Send Kinesis Firehose stream data to Coralogix.
-SemanticVersion: 0.1.1
+SemanticVersion: 0.2.1
 Parameters:
-  CoralogixRegion:
+  CoralogixRegion: 
     Type: String
     Description: The Coralogix location region [ireland, stockholm, india, singapore, us, us2]
     AllowedValues:
