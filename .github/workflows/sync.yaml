@@ -74,7 +74,7 @@ jobs:
       - uses: planetscale/ghcommit-action@v0.1.19
         with:
           commit_message: "syncing change from github.com/coralogix/coragix-aws-serverless-rust, ${{ github.event.head_commit.message }}"
-          repo: ${{ env.CLOUDFORMATION_REPO }}
+          repo: guyrenny/test
           branch: master
           file_pattern: '*.yaml *.md'
         env:
