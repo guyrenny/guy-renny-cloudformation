@@ -67,6 +67,8 @@ jobs:
           git add ${{ env.CFN_INTEGRATION_DIR }}
           git status
           git diff
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       # Commit all changed files back to the repository
       - uses: planetscale/ghcommit-action@v0.1.19
