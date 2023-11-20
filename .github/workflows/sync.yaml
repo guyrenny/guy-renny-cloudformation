@@ -63,8 +63,8 @@ jobs:
           # cat .tmp/template.yaml | yq '.Resources.LambdaFunction.Properties.CodeUri = "s3://${{ env.REPO_BUCKET_PREFIX }}-${AWS::Region}/${{ env.REPO_PACKAGE_ZIP }}"' > ${{ env.CFN_INTEGRATION_DIR }}/template.yaml
           # cat ${{ env.CFN_INTEGRATION_DIR }}/template.yaml | grep -i codeuri
           
-          mv -v .tmp/README.md ${{ env.CFN_INTEGRATION_DIR }}/README.md
-          git add ${{ env.CFN_INTEGRATION_DIR }}
+          mv -v .tmp/README.md guyrenny/test/README.md
+          git add guyrenny/test
           git status
           git diff
         env:
