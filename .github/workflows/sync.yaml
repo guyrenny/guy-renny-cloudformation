@@ -59,7 +59,7 @@ jobs:
       - run: sudo snap install yq
       - name: push files
         run: |
-          mkdir -p ${{ env.CFN_INTEGRATION_DIR }}
+          mkdir -p guyrenny/test
           # cat .tmp/template.yaml | yq '.Resources.LambdaFunction.Properties.CodeUri = "s3://${{ env.REPO_BUCKET_PREFIX }}-${AWS::Region}/${{ env.REPO_PACKAGE_ZIP }}"' > ${{ env.CFN_INTEGRATION_DIR }}/template.yaml
           # cat ${{ env.CFN_INTEGRATION_DIR }}/template.yaml | grep -i codeuri
           
