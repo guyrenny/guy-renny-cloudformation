@@ -62,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: replace_template
-          path: ./replace_template.sh
+          path: ./scripts/replace_template.sh
 
   create_pr:
     runs-on: ubuntu-latest
