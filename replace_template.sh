@@ -38,7 +38,7 @@ for resource in "${no_condition_resource[@]}"; do
   echo "      - $resource" >> $file
 done
 
-if [[ $file_path == *"aws-shipper-lambda" ]]; then
+if [[ $file == *"aws-shipper-lambda" ]]; then
   echo "
       Properties:
         #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
