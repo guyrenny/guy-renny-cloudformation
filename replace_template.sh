@@ -45,12 +45,16 @@ if [[ $file == *"aws-shipper-lambda"* ]]; then
         ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
         IntegrationId: !Ref IntegrationId
         CoralogixRegion: !If
-          - IsRegionCustomUrlEmpty
-          - !Ref CustomDomain
-          - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+          - IsCustomDomain
+          - !Sub
+            - https://ingress.${domain}
+            - {domain: !Ref CustomDomain}
+          - !Sub
+            - https://ingress.${domain}
+            - {domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]}
         CoralogixApiKey: !If
-          - IsSecretArn
-          - !GetAtt MySecretApi.SecretString
+          - StoreAPIKeyInSecretsManager
+          - !Ref Secret
           - !Ref ApiKey
 
         # Parameters to track
@@ -77,6 +81,6 @@ fi
 
 while IFS= read -r parameter; do
   if [[ $parameter != "ApiKey" ]] && [[ $parameter != "IntegrationId" ]] && [[ $parameter != "ApplicationName" ]] && [[ $parameter != "SubsystemName" ]]; then
-    echo "      ${parameter}Field: !Ref $parameter" >> $file
+    echo "        ${parameter}Field: !Ref $parameter" >> $file
   fi
 done <<< "$parameters"
