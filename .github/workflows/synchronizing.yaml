@@ -140,7 +140,7 @@ jobs:
 
       - name: Create pull request
         run: |
-          if $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+'); then
+          if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
             branch_name=brach-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
             echo number
             Pr_name=$(echo "${{ github.event.head_commit.message }}" | grep -E '(#\d+)')
