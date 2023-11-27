@@ -60,11 +60,11 @@ if [[ $file == *"aws-shipper-lambda"* ]]; then
         - !Ref ApiKey" >> $file
 else
   echo "
-        CoralogixDomain: !If
-          - IsRegionCustomUrlEmpty
-          - !Ref CustomDomain
-          - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
-        CoralogixApiKey: !Ref ApiKey" >> $file
+      CoralogixDomain: !If
+        - IsRegionCustomUrlEmpty
+        - !Ref CustomDomain
+        - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+      CoralogixApiKey: !Ref ApiKey" >> $file
 fi
 echo "
       # Parameters to track
