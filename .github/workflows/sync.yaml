@@ -85,7 +85,7 @@ jobs:
       - name: Download replace_template file
         uses: actions/download-artifact@v3
         with:
-          name: replace_template
+          name: replace_template.sh
           path: ./
 
       - name: Download changed-integration file
