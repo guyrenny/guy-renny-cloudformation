@@ -98,7 +98,7 @@ jobs:
 
       - name: apply changes to the files
         run: |
-          if $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+'); then
+          if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
             branch_name=$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
             echo number
           elif echo "${{ github.event.head_commit.message }}" | grep -q "#"; then
