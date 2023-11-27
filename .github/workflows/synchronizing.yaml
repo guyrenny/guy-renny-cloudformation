@@ -140,7 +140,6 @@ jobs:
 
       - name: Create pull request
         run: |
-          set -x
           if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
             branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
             echo $branch_name
@@ -157,6 +156,7 @@ jobs:
           if [[ -n "$pr_exists" ]]; then
             echo "Pull request already exists: #$pr_exists"
           else
+            branch_name=branch_new
             gh pr create --base master --head "${branch_name}" --title "${Pr_name}" --body "This pull request syncs the changes from the cloudformation repo to this repo."
           fi
         env:
