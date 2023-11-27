@@ -142,7 +142,7 @@ jobs:
         run: |
           set -x
           if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
-            branch_name=brach-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
+            branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
             echo $branch_name
             Pr_name=$(echo "${{ github.event.head_commit.message }}" | awk '{sub(/ *\(#[0-9]+\)/, ""); print}')
             echo $Pr_name
