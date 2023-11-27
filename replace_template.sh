@@ -38,49 +38,42 @@ for resource in "${no_condition_resource[@]}"; do
   echo "      - $resource" >> $file
 done
 
+
+echo "
+    Properties:
+      #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
+      ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
+      IntegrationId: !Ref IntegrationId" >> $file
 if [[ $file == *"aws-shipper-lambda"* ]]; then
   echo "
-      Properties:
-        #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
-        ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
-        IntegrationId: !Ref IntegrationId
-        CoralogixRegion: !If
-          - IsCustomDomain
-          - !Sub
-            - https://ingress.${domain}
-            - {domain: !Ref CustomDomain}
-          - !Sub
-            - https://ingress.${domain}
-            - {domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]}
-        CoralogixApiKey: !If
-          - StoreAPIKeyInSecretsManager
-          - !Ref Secret
-          - !Ref ApiKey
-
-        # Parameters to track
-        IntegrationNameField: !Ref \"AWS::StackName\"
-        SubsystemField: !Ref SubsystemName
-        ApplicationNameField: !Ref ApplicationName" >> $file
+      CoralogixRegion: !If
+        - IsCustomDomain
+        - !Sub
+          - https://ingress.${domain}
+          - {domain: !Ref CustomDomain}
+        - !Sub
+          - https://ingress.${domain}
+          - {domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]}
+      CoralogixApiKey: !If
+        - StoreAPIKeyInSecretsManager
+        - !Ref Secret
+        - !Ref ApiKey" >> $file
 else
   echo "
-      Properties:
-        #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
-        ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
-        IntegrationId: !Ref IntegrationId
         CoralogixDomain: !If
           - IsRegionCustomUrlEmpty
           - !Ref CustomDomain
           - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
-        CoralogixApiKey: !Ref ApiKey
-
-        # Parameters to track
-        IntegrationNameField: !Ref \"AWS::StackName\"
-        SubsystemField: !Ref SubsystemName
-        ApplicationNameField: !Ref ApplicationName" >> $file
+        CoralogixApiKey: !Ref ApiKey" >> $file
 fi
+echo "
+      # Parameters to track
+      IntegrationNameField: !Ref \"AWS::StackName\"
+      SubsystemField: !Ref SubsystemName
+      ApplicationNameField: !Ref ApplicationName" >> $file
 
 while IFS= read -r parameter; do
   if [[ $parameter != "ApiKey" ]] && [[ $parameter != "IntegrationId" ]] && [[ $parameter != "ApplicationName" ]] && [[ $parameter != "SubsystemName" ]]; then
-    echo "        ${parameter}Field: !Ref $parameter" >> $file
+    echo "      ${parameter}Field: !Ref $parameter" >> $file
   fi
 done <<< "$parameters"
