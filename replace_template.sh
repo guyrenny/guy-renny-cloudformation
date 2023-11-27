@@ -29,6 +29,7 @@ while IFS= read -r resource; do
     fi
 done <<< "$resources"
 
+
 echo "  IntegrationStatusNotifier:
     Type: Custom::IntegrationsServiceNotifier
     DependsOn:" >> $file
@@ -36,21 +37,43 @@ echo "  IntegrationStatusNotifier:
 for resource in "${no_condition_resource[@]}"; do
   echo "      - $resource" >> $file
 done
-echo "
-    Properties:
-      #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
-      ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
-      IntegrationId: !Ref IntegrationId
-      CoralogixDomain: !If
-        - IsRegionCustomUrlEmpty
-        - !Ref CustomDomain
-        - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
-      CoralogixApiKey: !Ref ApiKey
 
-      # Parameters to track
-      IntegrationNameField: !Ref \"AWS::StackName\"
-      SubsystemField: !Ref SubsystemName
-      ApplicationNameField: !Ref ApplicationName" >> $file
+if [[ $file_path == *"aws-shipper-lambda" ]]; then
+  echo "
+      Properties:
+        #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
+        ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
+        IntegrationId: !Ref IntegrationId
+        CoralogixRegion: !If
+          - IsRegionCustomUrlEmpty
+          - !Ref CustomDomain
+          - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+        CoralogixApiKey: !If
+          - IsSecretArn
+          - !GetAtt MySecretApi.SecretString
+          - !Ref ApiKey
+
+        # Parameters to track
+        IntegrationNameField: !Ref \"AWS::StackName\"
+        SubsystemField: !Ref SubsystemName
+        ApplicationNameField: !Ref ApplicationName" >> $file
+else
+  echo "
+      Properties:
+        #      {{AWS_ACCOUNT_ID}} is replaced during the template synchronisation
+        ServiceToken: !Sub \"arn:aws:lambda:\${AWS::Region}:{{AWS_ACCOUNT_ID}}:function:integrations-custom-resource-notifier\"
+        IntegrationId: !Ref IntegrationId
+        CoralogixDomain: !If
+          - IsRegionCustomUrlEmpty
+          - !Ref CustomDomain
+          - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+        CoralogixApiKey: !Ref ApiKey
+
+        # Parameters to track
+        IntegrationNameField: !Ref \"AWS::StackName\"
+        SubsystemField: !Ref SubsystemName
+        ApplicationNameField: !Ref ApplicationName" >> $file
+fi
 
 while IFS= read -r parameter; do
   if [[ $parameter != "ApiKey" ]] && [[ $parameter != "IntegrationId" ]] && [[ $parameter != "ApplicationName" ]] && [[ $parameter != "SubsystemName" ]]; then
