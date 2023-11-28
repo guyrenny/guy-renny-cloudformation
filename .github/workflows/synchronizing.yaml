@@ -90,6 +90,7 @@ jobs:
           git pull origin master
           git checkout -b ${branch_name}
           git add .
+          git push --set-upstream origin ${branch_name}
 
       - name: Create template-directory
         run: mkdir ./template-directory
@@ -127,7 +128,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git pull origin master
-          git checkout -b ${branch_name}
+          git checkout ${branch_name}
           git push --set-upstream origin ${branch_name}
           sync_branch_exists=$(git ls-remote --heads origin "${branch_name}" | wc -l)
           if [[ $sync_branch_exists -ne 0 ]]; then
