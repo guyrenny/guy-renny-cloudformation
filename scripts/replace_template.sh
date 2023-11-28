@@ -55,10 +55,10 @@ if [[ $file == *"aws-shipper-lambda"* ]]; then
           - {domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]}
       CoralogixApiKey: !If
           - StoreAPIKeyInSecretsManager
-          - !Sub ["{{resolve:secretsmanager:${secret_arn}:SecretString:}}", {"secret_arn": !Ref Secret }]
+          - !Sub ["{{resolve:secretsmanager:\${secret_arn}:SecretString:}}", {"secret_arn": !Ref Secret }]
           - !If 
             - IsApiKeySecretArn
-            - !Sub ["{{resolve:secretsmanager:${secret_arn}:SecretString:}}", {"secret_arn": !Ref ApiKey }]
+            - !Sub ["{{resolve:secretsmanager:\${secret_arn}:SecretString:}}", {"secret_arn": !Ref ApiKey }]
             - !Ref ApiKey" >> $file
 else
   echo "
