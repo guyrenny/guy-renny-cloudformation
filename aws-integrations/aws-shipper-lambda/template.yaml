@@ -4,7 +4,7 @@ Description: Send logs to Coralogix from AWS, (S3, SNS, Cloudwatch and more)
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: Coralogix-Logs
-    Description: Send logs to Coralogix.
+    Description: Send logs to Coralogix..
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
@@ -67,7 +67,7 @@ Parameters:
       - US
       - US2
       - Custom
-    Default: Custom
+    Default: Europe
   CustomDomain:
     Type: String
     Description: The Custom Domain. If set, will be the domain used to send telemetry (e.g. coralogix.com, private.coralogix.com)
@@ -79,13 +79,16 @@ Parameters:
       This value can be a Coralogix API Key or an AWS Secret Manager ARN that holds the API Key
     MinLength: 1
     NoEcho: true
+    Default: "2fa1aadf-d7dd-f7a1-253c-7a8b14e6409c"
   ApplicationName:
     Type: String
     Description: The name of your application (https://coralogix.com/docs/application-and-subsystem-names/)
     MinLength: 1
+    Default: "app"
   SubsystemName:
     Type: String
     Description: The subsystem name of your application (https://coralogix.com/docs/application-and-subsystem-names/)
+    Default: "sub"
   NewlinePattern:
     Type: String
     Description: Regular expression to detect a new log line for multiline logs from S3 source, e.g., use expression \n(?:\r\n|\r|\n)
@@ -107,13 +110,14 @@ Parameters:
       - "WARNING"
       - "ERROR"
       - "DEBUG"
-    Default: "INFO"
+    Default: "ERROR"
   S3BucketName:
     Type: String
     Description: The name of the AWS S3 bucket to watch
     AllowedPattern: '^[0-9A-Za-z\.\-_]*(?<!\.)$'
     MinLength: 3
     MaxLength: 63
+    Default: "gr-integrations-aws-testing"
   S3KeyPrefix:
     Type: String
     Description: The AWS S3 path prefix to watch
@@ -169,7 +173,7 @@ Parameters:
     AllowedValues:
       - true
       - false
-    Default: true
+    Default: false
 Mappings:
   CoralogixRegionMap:
     Europe:
@@ -184,6 +188,8 @@ Mappings:
       Domain: coralogix.us
     US2:
       Domain: cx498.coralogix.com
+    Custom:
+      Domain: ""
 Conditions:
   IsNotificationEnabled: !Not [!Equals [!Ref NotificationEmail, '']]
   IsCustomDomain: !Equals [!Ref CoralogixRegion, Custom]
@@ -191,10 +197,7 @@ Conditions:
   S3SuffixIsSet: !Not [!Equals [!Ref S3KeySuffix, '']]
   IsCloudTrailIntegration: !Equals [!Ref IntegrationType, 'cloudtrail']
   StoreAPIKeyInSecretsManager: !Equals [!Ref StoreAPIKeyInSecretsManager, 'true']
-  IsApiKeySecretArn:
-    Fn::Contains:
-      - "arn:aws"
-      - !Ref ApiKey
+  IsApiKeySecretArn: !Not [!Equals [!Ref ApiKey , !Select [0,!Split [":" , !Ref ApiKey]]]]
   UseSNSTopicARN: !And
     - !Not [!Equals [!Ref SNSTopicArn, '']]
     - !Equals [!Ref CloudWatchLogGroupName, '']
@@ -240,8 +243,11 @@ Globals:
             - {domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]}
         CORALOGIX_API_KEY: !If
           - StoreAPIKeyInSecretsManager
-          - !Ref Secret
-          - !Ref ApiKey
+          - !Sub ["{{resolve:secretsmanager:${secret_arn}:SecretString:}}", {"secret_arn": !Ref Secret }]
+          - !If 
+            - IsApiKeySecretArn
+            - !Sub ["{{resolve:secretsmanager:${secret_arn}:SecretString:}}", {"secret_arn": !Ref ApiKey }]
+            - !Ref ApiKey
         app_name: !Ref ApplicationName
         sub_name: !Ref SubsystemName
         NEWLINE_PATTERN: !Ref NewlinePattern
@@ -277,7 +283,9 @@ Resources:
     Condition: UseDefault
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://coralogix-serverless-repo-${AWS::Region}/coralogix-aws-shipper.zip
+      CodeUri:
+        Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
+        Key: coralogix-aws-shipper.zip
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref S3BucketName
@@ -343,7 +351,9 @@ Resources:
     Condition: UseSNSTopicARN
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://coralogix-serverless-repo-${AWS::Region}/coralogix-aws-shipper.zip
+      CodeUri:
+        Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
+        Key: coralogix-aws-shipper.zip
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref S3BucketName
@@ -392,7 +402,9 @@ Resources:
     Condition: UseCloudwatchLogs
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://coralogix-serverless-repo-${AWS::Region}/coralogix-aws-shipper.zip
+      CodeUri:
+        Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
+        Key: coralogix-aws-shipper.zip
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref S3BucketName
