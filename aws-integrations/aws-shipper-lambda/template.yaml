@@ -191,6 +191,10 @@ Conditions:
   S3SuffixIsSet: !Not [!Equals [!Ref S3KeySuffix, '']]
   IsCloudTrailIntegration: !Equals [!Ref IntegrationType, 'cloudtrail']
   StoreAPIKeyInSecretsManager: !Equals [!Ref StoreAPIKeyInSecretsManager, 'true']
+  IsApiKeySecretArn:
+    Fn::Contains:
+      - "arn:aws"
+      - !Ref ApiKey
   UseSNSTopicARN: !And
     - !Not [!Equals [!Ref SNSTopicArn, '']]
     - !Equals [!Ref CloudWatchLogGroupName, '']
