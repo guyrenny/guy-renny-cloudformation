@@ -134,16 +134,18 @@ jobs:
           rm -rf template-directory
           rm changed-integration.txt
           git add .
+          git commit -m "Copy file from cloudformation repository"
+          git push --set-upstream origin ${branch_name}
 
-      - name: commit change
-        uses: planetscale/ghcommit-action@v0.1.19
-        with:
-          commit_message: "Copy file from cloudformation repository"
-          repo: guyrenny/test
-          branch: ${branch_name}
-          file_pattern: '*.yaml *.md'
-        env:
-          GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
+      # - name: commit change
+      #   uses: planetscale/ghcommit-action@v0.1.19
+      #   with:
+      #     commit_message: "Copy file from cloudformation repository"
+      #     repo: guyrenny/test
+      #     branch: ${branch_name}
+      #     file_pattern: '*.yaml *.md'
+      #   env:
+      #     GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
 
       - name: Create pull request
         run: |
