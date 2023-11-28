@@ -91,7 +91,7 @@ jobs:
           git branch ${branch_name}
           git checkout ${branch_name}
           git add .
-          git push --set-origin ${branch_name}
+          git push --set-upstream ${branch_name}
 
       - name: Create template-directory
         run: mkdir ./template-directory
