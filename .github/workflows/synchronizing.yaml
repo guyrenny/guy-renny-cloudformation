@@ -87,10 +87,10 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git remote update
           git fetch
-          git pull origin master
-          git branch ${branch_name}
-          git checkout ${branch_name}
-          git add .
+          git checkout master
+          git pull origin master  # Update the local master branch
+          git checkout -b ${branch_name}
+          git rebase master       # Rebase your new branch on top of the updated master
           git push --set-upstream origin ${branch_name}
 
       - name: Create template-directory
