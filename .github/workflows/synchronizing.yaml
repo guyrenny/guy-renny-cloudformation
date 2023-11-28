@@ -134,6 +134,7 @@ jobs:
           rm -rf template-directory
           rm changed-integration.txt
           git add .
+          export branch_name=${branch_name}
 
       - name: dont use
         run: echo ${branch_name}
