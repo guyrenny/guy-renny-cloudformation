@@ -93,6 +93,7 @@ jobs:
           git config pull.rebase true 
           git pull origin master
           git pull origin ${branch_name}
+          git add .
           git push --set-upstream origin ${branch_name}
 
       - name: Create template-directory
