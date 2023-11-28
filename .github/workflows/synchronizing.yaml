@@ -134,8 +134,9 @@ jobs:
           rm -rf template-directory
           rm changed-integration.txt
           git add .
-          git commit -m "Copy file from cloudformation repository"
-          git push --set-upstream origin ${branch_name}
+
+      - name: dont use
+        run: echo ${branch_name}
 
       # - name: commit change
       #   uses: planetscale/ghcommit-action@v0.1.19
