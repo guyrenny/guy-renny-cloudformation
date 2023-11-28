@@ -91,7 +91,7 @@ jobs:
 
           # Create a new branch and rebase it on top of the updated master
           git checkout -b ${branch_name}
-          git pull origin master --rebase
+          git pull origin  ${branch_name} --rebase  # Update the local test branch
           git push --set-upstream origin ${branch_name}
 
       - name: Create template-directory
