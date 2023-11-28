@@ -88,8 +88,10 @@ jobs:
           git fetch
           git checkout master
           git pull origin master  # Update the local master branch
+
+          # Create a new branch and rebase it on top of the updated master
           git checkout -b ${branch_name}
-          git rebase master       # Rebase your new branch on top of the updated master
+          git pull origin master --rebase
           git push --set-upstream origin ${branch_name}
 
       - name: Create template-directory
