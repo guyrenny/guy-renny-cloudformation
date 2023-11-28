@@ -2,6 +2,7 @@ name: Sync integration-definitions
 
 on: 
   push:
+
 jobs:
   upload_files:
     runs-on: ubuntu-latest
@@ -71,28 +72,6 @@ jobs:
         with:
           repository: guyrenny/test
           token: ${{ secrets.DESTINATION_REPO_TOKEN }}
-      # - name: create the new branch
-      #   run: |
-      #     if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
-      #       branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
-      #     elif echo "${{ github.event.head_commit.message }}" | grep -q "#"; then
-      #       branch_name=$(echo "${{ github.event.head_commit.message }}" | cut -d '#' -f 2)
-      #       echo "${{ github.event.head_commit.message }}"
-      #     else
-      #       branch_name=update_integration-branch
-      #     fi
-      #     echo $branch_name
-      #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
-      #     git config --local user.name "github-actions[bot]"
-      #     git remote update
-      #     git fetch
-      #     git checkout master
-      #     git pull origin master  # Update the local master branch
-
-      #     # Create a new branch and rebase it on top of the updated master
-      #     git checkout -b ${branch_name}
-      #     git pull origin  ${branch_name} --rebase  # Update the local test branch
-      #     git push --set-upstream origin ${branch_name}
 
       - name: Create template-directory
         run: mkdir ./template-directory
