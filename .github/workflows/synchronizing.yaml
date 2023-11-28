@@ -76,7 +76,6 @@ jobs:
         run: |
           if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
             branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+')
-            echo number
           elif echo "${{ github.event.head_commit.message }}" | grep -q "#"; then
             branch_name=$(echo "${{ github.event.head_commit.message }}" | cut -d '#' -f 2)
             echo "${{ github.event.head_commit.message }}"
@@ -86,15 +85,13 @@ jobs:
           echo $branch_name
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git config pull.rebase true 
+          git remote update
+          git fetch
           git pull origin master
-          git pull origin ${branch_name}
-          git checkout -b ${branch_name}
-          git config pull.rebase true 
-          git pull origin master
-          git pull origin ${branch_name}
+          git branch ${branch_name}
+          git checkout ${branch_name}
           git add .
-          git push --set-upstream origin ${branch_name}
+          git push --set-origin ${branch_name}
 
       - name: Create template-directory
         run: mkdir ./template-directory
