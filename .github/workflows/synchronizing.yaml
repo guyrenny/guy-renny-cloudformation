@@ -90,7 +90,6 @@ jobs:
           git pull origin master
           git checkout -b ${branch_name}
           git add .
-          git push --set-upstream ${branch_name}
 
       - name: Create template-directory
         run: mkdir ./template-directory
