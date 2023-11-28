@@ -134,11 +134,12 @@ jobs:
           rm -rf template-directory
           rm changed-integration.txt
           git add .
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
 
       - name: Set env
         run: echo "GITHUB_SHA_SHORT=test" >> $GITHUB_ENV
       - name: Test
-        run: echo $GITHUB_SHA_SHORT
+        run: echo $branch_name
 
       # - name: commit change
       #   uses: planetscale/ghcommit-action@v0.1.19
