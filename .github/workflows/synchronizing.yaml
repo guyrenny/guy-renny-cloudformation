@@ -136,17 +136,15 @@ jobs:
           git add .
           echo "branch_name=$branch_name" >> $GITHUB_ENV
 
-      - name: Set env
-        run: echo "GITHUB_SHA_SHORT=test" >> $GITHUB_ENV
       - name: Test
-        run: echo $branch_name
+        run: echo ${{env.branch_name}}
 
       - name: commit change
         uses: planetscale/ghcommit-action@v0.1.19
         with:
           commit_message: "Copy file from cloudformation repository"
           repo: guyrenny/test
-          branch: ${branch_name}
+          branch: ${{env.branch_name}}
           file_pattern: '*.yaml *.md'
         env:
           GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
