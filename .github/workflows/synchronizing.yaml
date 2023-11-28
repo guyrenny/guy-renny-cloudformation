@@ -136,9 +136,6 @@ jobs:
           git add .
           echo "branch_name=$branch_name" >> $GITHUB_ENV
 
-      - name: Test
-        run: echo ${{env.branch_name}}
-
       - name: commit change
         uses: planetscale/ghcommit-action@v0.1.19
         with:
