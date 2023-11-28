@@ -30,7 +30,7 @@ while IFS= read -r resource; do
 done <<< "$resources"
 if [[ $file == *"aws-shipper-lambda"* ]]; then
   yq eval --inplace '.Conditions += {"IsApiKeySecretArn": "condition"}' $file
-  sed -i "s/'IsApiKeySecretArn: condition/IsApiKeySecretArn: \!Not [\!Equals [\!Ref ApiKey , \!Select [0,\!Split [\":\" , \!Ref ApiKey]]]]/g" $file
+  sed -i "s/IsApiKeySecretArn: condition/IsApiKeySecretArn: \!Not [\!Equals [\!Ref ApiKey , \!Select [0,\!Split [\":\" , \!Ref ApiKey]]]]/g" $file
 fi
 
 echo "  IntegrationStatusNotifier:

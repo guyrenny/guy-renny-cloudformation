@@ -201,7 +201,8 @@ Conditions:
   UseDefault: !And
     - !Not [!Condition UseCloudwatchLogs]
     - !Not [!Condition UseSNSTopicARN]
-Rules:
+  IsApiKeySecretArn: !Not [!Equals [!Ref ApiKey , !Select [0,!Split [":" , !Ref ApiKey]]]]
+  Rules:
   ValidateParameters:
     RuleCondition: !Equals [!Ref CoralogixRegion, Custom]
     Assertions:
