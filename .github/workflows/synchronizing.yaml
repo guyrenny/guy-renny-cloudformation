@@ -88,7 +88,8 @@ jobs:
           git remote update
           git fetch
           git pull origin master
-          git checkout -b ${branch_name}
+          git branch ${branch_name}
+          git checkout ${branch_name}
           git add .
           git push --set-upstream origin ${branch_name}
 
