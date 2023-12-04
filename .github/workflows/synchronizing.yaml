@@ -117,7 +117,10 @@ jobs:
           echo fetch
           git switch -c ${branch_name} --track origin/master   
           echo switch
-          git push --set-upstream origin ${branch_name}
+          pr_exists=$(gh pr list --base master --head "${branch_name}" --json number -q '.[].number')
+          if [[ -n "$pr_exists" ]]; then
+            git push --set-upstream origin ${branch_name}
+          fi
           sync_branch_exists=$(git ls-remote --heads origin "${branch_name}" | wc -l)
           if [[ $sync_branch_exists -ne 0 ]]; then
             git pull origin ${branch_name} --rebase
