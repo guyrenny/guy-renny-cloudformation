@@ -4,7 +4,7 @@ Description: Send logs to Coralogix from AWS, (S3, SNS, Cloudwatch and more)
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: Coralogix-Logs
-    Description: Send logs to Coralogix another test.
+    Description: Send logs to Coralogix.
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
@@ -14,6 +14,7 @@ Metadata:
       - logs
       - sns
       - s3
+      - s3_csv
     HomePageUrl: https://coralogix.com
     SemanticVersion: 0.0.0
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-shipper
@@ -27,16 +28,16 @@ Metadata:
           - CustomDomain
           - ApplicationName
           - SubsystemName
+          - ApiKey
           - StoreAPIKeyInSecretsManager
       - Label:
-          default: Integration S3 configuration
+          default: Integration S3/Cloudtrail/vpcflowlogs/s3_csv configuration
         Parameters:
           - S3BucketName
           - S3KeyPrefix
           - S3KeySuffix
           - NewlinePattern
           - SNSTopicArn
-          - ApiKey
       - Label:
           default: Integration Cloudwatch configuration
         Parameters:
@@ -53,6 +54,14 @@ Metadata:
           - FunctionMemorySize
           - FunctionTimeout
           - LogLevel
+          - LambdaLogRetention
+          - LogsPerBatch
+      - Label:
+          default: VPC configuration Optional
+        Parameters:
+          - LambdaSubnetID
+          - LambdaSecurityGroupID
+          - UsePrivateLink
 Parameters:
   CoralogixRegion:
     Type: String
@@ -67,7 +76,7 @@ Parameters:
       - US
       - US2
       - Custom
-    Default: Europe
+    Default: Custom
   CustomDomain:
     Type: String
     Description: The Custom Domain. If set, will be the domain used to send telemetry (e.g. coralogix.com, private.coralogix.com)
@@ -79,16 +88,13 @@ Parameters:
       This value can be a Coralogix API Key or an AWS Secret Manager ARN that holds the API Key
     MinLength: 1
     NoEcho: true
-    Default: "2fa1aadf-d7dd-f7a1-253c-7a8b14e6409c"
   ApplicationName:
     Type: String
     Description: The name of your application (https://coralogix.com/docs/application-and-subsystem-names/)
     MinLength: 1
-    Default: "app"
   SubsystemName:
     Type: String
     Description: The subsystem name of your application (https://coralogix.com/docs/application-and-subsystem-names/)
-    Default: "sub"
   NewlinePattern:
     Type: String
     Description: Regular expression to detect a new log line for multiline logs from S3 source, e.g., use expression \n(?:\r\n|\r|\n)
@@ -110,14 +116,18 @@ Parameters:
       - "WARNING"
       - "ERROR"
       - "DEBUG"
-    Default: "ERROR"
+    Default: "INFO"
+  LogsPerBatch:
+    Type: Number
+    Description: Number of logs to send in each batch
+    MinValue: 1
+    MaxValue: 10000
+    Default: 500
   S3BucketName:
     Type: String
     Description: The name of the AWS S3 bucket to watch
     AllowedPattern: '^[0-9A-Za-z\.\-_]*(?<!\.)$'
-    MinLength: 3
     MaxLength: 63
-    Default: "gr-integrations-aws-testing"
   S3KeyPrefix:
     Type: String
     Description: The AWS S3 path prefix to watch
@@ -132,7 +142,7 @@ Parameters:
     Type: Number
     Description: Memory size for lambda function
     MinValue: 128
-    MaxValue: 3008
+    MaxValue: 10240
     Default: 1024
   FunctionTimeout:
     Type: Number
@@ -146,16 +156,17 @@ Parameters:
     Default: ''
   IntegrationType:
     Type: String
-    Description: 'The integration type. Can be one of: s3, cloudtrail, vpcflowlogs, cloudwatch'
+    Description: 'The integration type. Can be one of: s3, cloudtrail, vpcflowlogs, cloudwatch, s3_csv'
     AllowedValues:
       - s3
       - cloudtrail
       - cloudwatch
       - vpcflowlogs
+      - s3_csv
     Default: s3
   CloudWatchLogGroupName:
     Type: String
-    Description: "A comma separated list of CloudWatch log groups names to watch\te.g, (log-group1,log-group2,log-group3)"
+    Description: 'A comma separated list of CloudWatch log groups names to watch  e.g, (log-group1,log-group2,log-group3)'
     Default: ''
   LambdaLogRetention:
     Type: Number
@@ -170,6 +181,21 @@ Parameters:
   StoreAPIKeyInSecretsManager:
     Type: String
     Description: "Store the API key in AWS Secrets Manager. ApiKeys are stored in secret manager\nby default. If this option is set to false, the ApiKey will apeear in plain text as an \nenvironment variable in the lambda function console.\n"
+    AllowedValues:
+      - true
+      - false
+    Default: true
+  LambdaSubnetID:
+    Type: String
+    Description: ID of Subnet into which to deploy the integration
+    Default: ''
+  LambdaSecurityGroupID:
+    Type: String
+    Description: ID of the SecurityGroup into which to deploy the integration
+    Default: ''
+  UsePrivateLink:
+    Type: String
+    Description: Will you be using our PrivateLink?
     AllowedValues:
       - true
       - false
@@ -197,10 +223,13 @@ Conditions:
   S3SuffixIsSet: !Not [!Equals [!Ref S3KeySuffix, '']]
   IsCloudTrailIntegration: !Equals [!Ref IntegrationType, 'cloudtrail']
   StoreAPIKeyInSecretsManager: !Equals [!Ref StoreAPIKeyInSecretsManager, 'true']
-  IsApiKeySecretArn: !Not [!Equals [!Ref ApiKey , !Select [0,!Split [":" , !Ref ApiKey]]]]
+  IsPrivateLink: !Equals [!Ref UsePrivateLink, 'true']
   UseSNSTopicARN: !And
     - !Not [!Equals [!Ref SNSTopicArn, '']]
     - !Equals [!Ref CloudWatchLogGroupName, '']
+  UseVpcConfig: !And
+    - !Not [!Equals [!Ref LambdaSubnetID, '']]
+    - !Not [!Equals [!Ref LambdaSecurityGroupID, '']]
   UseCloudwatchLogs: !And
     - !Not [!Equals [!Ref CloudWatchLogGroupName, '']]
     - !Not [!Condition UseSNSTopicARN]
@@ -217,11 +246,18 @@ Conditions:
     - !Condition UseSNSTopicARN
     - !Condition IsNotificationEnabled
 Rules:
-  ValidateParameters:
+  ValidateCustomDomain:
     RuleCondition: !Equals [!Ref CoralogixRegion, Custom]
     Assertions:
       - Assert: !Not [!Equals [!Ref CustomDomain, '']]
         AssertDescription: CustomDomain must be set when CoralogixRegion is set to Custom
+  ValidatePrivateLinkConfig:
+    RuleCondition: !Equals [!Ref UsePrivateLink, 'true']
+    Assertions:
+      - Assert: !And
+          - !Not [!Equals [!Ref LambdaSubnetID, '']]
+          - !Not [!Equals [!Ref LambdaSecurityGroupID, '']]
+        AssertDescription: Subnet ID and Security Group ID must be set when UsePrivateLink is set to true
 Globals:
   Function:
     Description: Send logs to Coralogix.
@@ -235,26 +271,34 @@ Globals:
       Variables:
         CORALOGIX_ENDPOINT: !If
           - IsCustomDomain
-          - !Sub
-            - https://ingress.${domain}
-            - {domain: !Ref CustomDomain}
-          - !Sub
-            - https://ingress.${domain}
-            - {domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]}
+          - !If
+            - IsPrivateLink
+            - !Sub
+              - https://ingress.private.${domain}
+              - domain: !Ref CustomDomain
+            - !Sub
+              - https://ingress.${domain}
+              - domain: !Ref CustomDomain
+          - !If
+            - IsPrivateLink
+            - !Sub
+              - https://ingress.private.${domain}
+              - domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]
+            - !Sub
+              - https://ingress.${domain}
+              - domain: !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]
         CORALOGIX_API_KEY: !If
           - StoreAPIKeyInSecretsManager
-          - !Sub ["{{resolve:secretsmanager:${secret_arn}:SecretString:}}", {"secret_arn": !Ref Secret }]
-          - !If 
-            - IsApiKeySecretArn
-            - !Sub ["{{resolve:secretsmanager:${secret_arn}:SecretString:}}", {"secret_arn": !Ref ApiKey }]
-            - !Ref ApiKey
-        app_name: !Ref ApplicationName
-        sub_name: !Ref SubsystemName
+          - !Ref Secret
+          - !Ref ApiKey
+        APP_NAME: !Ref ApplicationName
+        SUB_NAME: !Ref SubsystemName
         NEWLINE_PATTERN: !Ref NewlinePattern
-        blocking_pattern: !Ref BlockingPattern
-        sampling: !Ref SamplingRate
+        BLOCKING_PATTERN: !Ref BlockingPattern
+        SAMPLING: !Ref SamplingRate
         INTEGRATION_TYPE: !Ref IntegrationType
         RUST_LOG: !Ref LogLevel
+        LOGS_PER_BATCH: !Ref LogsPerBatch
 Resources:
   Secret:
     Type: 'AWS::SecretsManager::Secret'
@@ -298,6 +342,14 @@ Resources:
         DestinationConfig:
           OnFailure:
             Type: SNS
+      VpcConfig:
+        Fn::If:
+          - UseVpcConfig
+          - SecurityGroupIds:
+              - !Ref LambdaSecurityGroupID
+            SubnetIds:
+              - !Ref LambdaSubnetID
+          - Ref: AWS::NoValue
   LambdaLogGroupDefault:
     Condition: UseDefault
     DeletionPolicy: Retain
@@ -371,6 +423,14 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref SNSTopicArn
+      VpcConfig:
+        Fn::If:
+          - UseVpcConfig
+          - SecurityGroupIds:
+              - !Ref LambdaSecurityGroupID
+            SubnetIds:
+              - !Ref LambdaSubnetID
+          - Ref: AWS::NoValue
   LambdaLogGroupWithSNSTopic:
     Condition: UseSNSTopicARN
     DeletionPolicy: Retain
@@ -417,6 +477,14 @@ Resources:
         DestinationConfig:
           OnFailure:
             Type: SNS
+      VpcConfig:
+        Fn::If:
+          - UseVpcConfig
+          - SecurityGroupIds:
+              - !Ref LambdaSecurityGroupID
+            SubnetIds:
+              - !Ref LambdaSubnetID
+          - Ref: AWS::NoValue
   LambdaLogGroupCloudwatchLogs:
     Condition: UseCloudwatchLogs
     DeletionPolicy: Retain
@@ -457,6 +525,14 @@ Resources:
   CustomResourceLambdaTriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      VpcConfig:
+        Fn::If:
+          - UseVpcConfig
+          - SecurityGroupIds:
+              - !Ref LambdaSecurityGroupID
+            SubnetIds:
+              - !Ref LambdaSubnetID
+          - Ref: AWS::NoValue
       Handler: index.lambda_handler
       Runtime: python3.11
       Timeout: 50
