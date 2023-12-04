@@ -111,8 +111,11 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git pull origin master
+          echo pull
           git fetch origin
-          git switch -c ${branch_name} --track origin/master     
+          echo fetch
+          git switch -c ${branch_name} --track origin/master   
+          echo switch
           git push --set-upstream origin ${branch_name}
           sync_branch_exists=$(git ls-remote --heads origin "${branch_name}" | wc -l)
           if [[ $sync_branch_exists -ne 0 ]]; then
