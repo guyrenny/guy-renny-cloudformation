@@ -98,8 +98,8 @@ jobs:
 
       - name: apply changes to the files
         run: |
-          if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '\(\#[0-9]+') ]]; then
-            branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '\(\#[0-9]+')
+          if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
+            branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+' | awk '{ gsub(/ /, ""); print }')
             echo number
           elif echo "${{ github.event.head_commit.message }}" | grep -q "#"; then
             branch_name=$(echo "${{ github.event.head_commit.message }}" | cut -d '#' -f 2)
@@ -151,8 +151,8 @@ jobs:
 
       - name: Create pull request
         run: |
-          if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '\(\#[0-9]+') ]]; then
-            branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '\(\#[0-9]+')
+          if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
+            branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+' | awk '{ gsub(/ /, ""); print }')
             echo $branch_name
             Pr_name=$(echo "${{ github.event.head_commit.message }}" | awk '{sub(/ *\(#[0-9]+\)/, ""); print}')
             echo $Pr_name
