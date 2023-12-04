@@ -145,6 +145,8 @@ jobs:
           rm changed-integration.txt
           git add .
           echo "branch_name=$branch_name" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.DESTINATION_REPO_TOKEN }}
 
       - name: commit change
         uses: planetscale/ghcommit-action@v0.1.19
