@@ -46,6 +46,7 @@ jobs:
                 break
               elif [ "${v1[i]}" -gt "${v2[i]}" ]; then
                 echo "$cargo_version is greater than $template_version"
+                sed -i "s/SemanticVersion: /SemanticVersion: $cargo_version/" aws-integrations/aws-shipper-lambda/crago.toml
                 break
               fi
             done
