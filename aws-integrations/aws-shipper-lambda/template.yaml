@@ -4,7 +4,7 @@ Description: Send logs to Coralogix from AWS, (S3, SNS, Cloudwatch and more)
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: Coralogix-Logs
-    Description: Send logs to Coralogix.......................
+    Description: Send logs to Coralogix.
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
@@ -16,7 +16,7 @@ Metadata:
       - s3
       - s3_csv
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 0.0.1
+    SemanticVersion: 2.1.0
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-shipper
   AWS::CloudFormation::Interface:
     ParameterGroups:
