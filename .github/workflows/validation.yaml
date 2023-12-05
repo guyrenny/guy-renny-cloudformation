@@ -61,7 +61,7 @@ jobs:
       - name: update the version
         uses: planetscale/ghcommit-action@v0.1.19
         with:
-          commit_message: "Copy file from cloudformation repository"
+          commit_message: "align template version with cargo.toml version"
           repo: guyrenny/guy-renny-cloudformation
           branch: versiob-test
           file_pattern: '*.yaml *.toml'
