@@ -42,7 +42,7 @@ jobs:
             for i in {0..2}; do
               if [ "${v1[i]}" -lt "${v2[i]}" ]; then
                 echo "$template_version is greater than $cargo_version"
-                sed -i "s/version = \"$cargo_version\"/version = $template_version/" aws-integrations/aws-shipper-lambda/crago.toml
+                sed -i "s/version = \"$cargo_version\"/version = \"$template_version\"/" aws-integrations/aws-shipper-lambda/crago.toml
                 break
               elif [ "${v1[i]}" -gt "${v2[i]}" ]; then
                 echo "$cargo_version is greater than $template_version"
