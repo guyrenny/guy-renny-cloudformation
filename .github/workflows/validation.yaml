@@ -24,14 +24,15 @@ jobs:
           echo fetch
           echo branch_name_${{ github.head_ref }}
           git checkout ${{ github.head_ref }}
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.DESTINATION_REPO_TOKEN }}
 
       - name: check versions
         run: |
           git branch
           cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
-          echo $cargo_version
-          echo $template_version
           if [[ "$cargo_version" != "$template_version" ]];then
             echo "not the same version"
             IFS='.' read -ra v1 <<< "$cargo_version"
@@ -41,6 +42,7 @@ jobs:
             for i in {0..2}; do
               if [ "${v1[i]}" -lt "${v2[i]}" ]; then
                 echo "$template_version is greater than $cargo_version"
+                sed -i "s/version = \"$cargo_version\"/version = $template_version/" aws-integrations/aws-shipper-lambda/crago.toml
                 break
               elif [ "${v1[i]}" -gt "${v2[i]}" ]; then
                 echo "$cargo_version is greater than $template_version"
@@ -48,8 +50,12 @@ jobs:
               fi
             done
           else
-            echo "the same version"
+            echo "The template and the cargo files are in the same version"
           fi
+          git add .
+        env:
+          GITHUB_TOKEN: ${{ secrets.DESTINATION_REPO_TOKEN }}
+
 
       # - name: update the version
       #   uses: planetscale/ghcommit-action@v0.1.19
