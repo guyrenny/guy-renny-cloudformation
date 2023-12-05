@@ -18,7 +18,7 @@ jobs:
         run: |
           cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
-          if [[ "$cargo_version" != "$template_version" ]];then
+          if [[ "$cargo_version" != \""$template_version"\" ]];then
             echo "not the same version"
           else
             echo "the same version"
