@@ -22,6 +22,19 @@ jobs:
           echo $template_version
           if [[ "$cargo_version" != "$template_version" ]];then
             echo "not the same version"
+            IFS='.' read -ra v1 <<< "$cargo_version"
+            IFS='.' read -ra v2 <<< "$template_version"
+
+            # Compare each component
+            for i in {0..2}; do
+              if [ "${v1[i]}" -lt "${v2[i]}" ]; then
+                echo "$template_version is greater than $cargo_version"
+                break
+              elif [ "${v1[i]}" -gt "${v2[i]}" ]; then
+                echo "$cargo_version is greater than $template_version"
+                break
+              fi
+            done
           else
             echo "the same version"
           fi
