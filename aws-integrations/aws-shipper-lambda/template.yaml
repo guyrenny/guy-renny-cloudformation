@@ -16,7 +16,7 @@ Metadata:
       - s3
       - s3_csv
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 1.1.00.1.1
+    SemanticVersion: 0.1.1
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-shipper
   AWS::CloudFormation::Interface:
     ParameterGroups:
