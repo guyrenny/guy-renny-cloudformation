@@ -3,6 +3,7 @@ name: validate version
 on: 
   pull_request:
     types: [opened, synchronize]
+    branches: [master,main]
     paths:
       - "**/template.yaml"
       - "**/cargo.toml"
