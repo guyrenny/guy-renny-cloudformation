@@ -37,7 +37,7 @@ jobs:
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
           if [[ "$cargo_version" != "$template_version" ]];then
             echo "The template and the cargo files are NOT in the same version"
-            sed -i '' "/^\[package\]$/,/version =/ s/version = \"[^\"]*\"/version = \"$template_version\"/" aws-integrations/aws-shipper-lambda/crago.toml
+            sed -i "/^\[package\]$/,/version =/ s/version = \"[^\"]*\"/version = \"$template_version\"/" aws-integrations/aws-shipper-lambda/crago.toml
           else
             echo "The template and the cargo files are in the same version"
           fi
