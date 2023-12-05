@@ -49,7 +49,7 @@ jobs:
         with:
           commit_message: "align template version with cargo.toml version"
           repo: guyrenny/guy-renny-cloudformation
-          branch: versiob-test
+          branch: ${{env.branch_name}}
           file_pattern: '*.yaml *.toml'
         env:
           GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
