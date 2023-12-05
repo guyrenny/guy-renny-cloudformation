@@ -62,7 +62,7 @@ jobs:
         with:
           commit_message: "Copy file from cloudformation repository"
           repo: guyrenny/guy-renny-cloudformation
-          branch: ${{env.branch_name}}
+          branch: versiob-test
           file_pattern: '*.yaml *.toml'
         env:
           GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
