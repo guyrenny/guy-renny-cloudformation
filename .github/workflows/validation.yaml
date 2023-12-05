@@ -57,12 +57,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DESTINATION_REPO_TOKEN }}
 
 
-      # - name: update the version
-      #   uses: planetscale/ghcommit-action@v0.1.19
-      #   with:
-      #     commit_message: "Copy file from cloudformation repository"
-      #     repo: guyrenny/test
-      #     branch: ${{env.branch_name}}
-      #     file_pattern: '*.yaml *.toml'
-      #   env:
-      #     GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
+      - name: update the version
+        uses: planetscale/ghcommit-action@v0.1.19
+        with:
+          commit_message: "Copy file from cloudformation repository"
+          repo: guyrenny/guy-renny-cloudformation
+          branch: ${{env.branch_name}}
+          file_pattern: '*.yaml *.toml'
+        env:
+          GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
