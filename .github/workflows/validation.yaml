@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0 
-      - name: check versions
+      - name: change branch
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -24,6 +24,10 @@ jobs:
           echo fetch
           echo branch_name_${{ github.head_ref }}
           git checkout ${{ github.head_ref }}
+
+      - name: check versions
+        run: |
+          git branch
           cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
           echo $cargo_version
