@@ -19,9 +19,19 @@ jobs:
           cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
           echo $cargo_version
-          echo \"$template_version\"
-          if [[ "$cargo_version" != \""$template_version"\" ]];then
+          echo $template_version
+          if [[ "$cargo_version" != "$template_version" ]];then
             echo "not the same version"
           else
             echo "the same version"
           fi
+
+      # - name: update the version
+      #   uses: planetscale/ghcommit-action@v0.1.19
+      #   with:
+      #     commit_message: "Copy file from cloudformation repository"
+      #     repo: guyrenny/test
+      #     branch: ${{env.branch_name}}
+      #     file_pattern: '*.yaml *.toml'
+      #   env:
+      #     GITHUB_TOKEN: ${{secrets.DESTINATION_REPO_TOKEN}}
