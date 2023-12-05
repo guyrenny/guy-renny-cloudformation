@@ -1,0 +1,25 @@
+name: validate version
+
+on: 
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - "**/template.yaml"
+      - "**/cargo.toml"
+jobs:
+  upload_files:
+    runs-on: ubuntu-latest
+    name: upload files
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 
+      - name: check versions
+        run: |
+          cargo_version=${cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | grep -oE '[^ ]+$'}
+          template_version=${cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$'}
+          if [[$cargo_version != $template_version]];then
+            echo "not the same version"
+          else
+            echo "the same version"
+          fi
