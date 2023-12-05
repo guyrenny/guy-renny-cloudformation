@@ -23,6 +23,7 @@ jobs:
           git fetch origin
           echo fetch
           echo branch_name_${{ github.head_ref }}
+          branch_name=${{ github.head_ref }}
           git checkout ${{ github.head_ref }}
           echo "branch_name=$branch_name" >> $GITHUB_ENV
         env:
