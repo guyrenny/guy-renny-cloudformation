@@ -46,7 +46,7 @@ jobs:
                 break
               elif [ "${v1[i]}" -gt "${v2[i]}" ]; then
                 echo "$cargo_version is greater than $template_version"
-                sed -i "s/SemanticVersion: $template_version"/SemanticVersion: $cargo_version/" aws-integrations/aws-shipper-lambda/template.yaml
+                sed -i "s/SemanticVersion: $template_version/SemanticVersion: $cargo_version/" aws-integrations/aws-shipper-lambda/template.yaml
                 break
               fi
             done
