@@ -22,8 +22,8 @@ jobs:
           echo pull
           git fetch origin
           echo fetch
-          echo ${{ github.head_ref }}
-          git switch --no-guess ${{ github.head_ref }}
+          echo branch_name_${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
           cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
           echo $cargo_version
