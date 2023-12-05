@@ -34,22 +34,8 @@ jobs:
           cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
           template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
           if [[ "$cargo_version" != "$template_version" ]];then
-            echo "not the same version"
-            IFS='.' read -ra v1 <<< "$cargo_version"
-            IFS='.' read -ra v2 <<< "$template_version"
-
-            # Compare each component
-            for i in {0..2}; do
-              if [ "${v1[i]}" -lt "${v2[i]}" ]; then
-                echo "$template_version is greater than $cargo_version"
-                sed -i "s/version = \"$cargo_version\"/version = \"$template_version\"/" aws-integrations/aws-shipper-lambda/crago.toml
-                break
-              elif [ "${v1[i]}" -gt "${v2[i]}" ]; then
-                echo "$cargo_version is greater than $template_version"
-                sed -i "s/SemanticVersion: $template_version/SemanticVersion: $cargo_version/" aws-integrations/aws-shipper-lambda/template.yaml
-                break
-              fi
-            done
+            echo "The template and the cargo files are NOT in the same version"
+            sed -i "/name = "coralogix-aws-shipper"/,/version = "[0-9.]*"/ s/version = "[0-9.]*"/version = "$template_version"/" aws-integrations/aws-shipper-lambda/crago.toml
           else
             echo "The template and the cargo files are in the same version"
           fi
