@@ -16,8 +16,8 @@ jobs:
           fetch-depth: 0 
       - name: check versions
         run: |
-          cargo_version=${cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | grep -oE '[^ ]+$'}
-          template_version=${cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$'}
+          cargo_version=$(cat aws-integrations/aws-shipper-lambda/crago.toml | grep "version" | head -1 | awk -F '"' '{print $2}')
+          template_version=$(cat aws-integrations/aws-shipper-lambda/template.yaml | grep "SemanticVersion" | grep -oE '[^ ]+$')
           if [[$cargo_version != $template_version]];then
             echo "not the same version"
           else
