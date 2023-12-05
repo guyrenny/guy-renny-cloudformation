@@ -40,6 +40,7 @@ jobs:
             echo "The template and the cargo files are in the same version"
           fi
           git add .
+          echo branch_name_is_${{env.branch_name}}
         env:
           GITHUB_TOKEN: ${{ secrets.DESTINATION_REPO_TOKEN }}
 
