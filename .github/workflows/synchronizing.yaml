@@ -3,8 +3,8 @@ name: Sync integration-definitions
 on: 
   push:
     # branches: [master, main, guyrenny-patch-1]
-    paths:
-      - "**/template.yaml"
+    # paths:
+    #   - "**/template.yaml"
 jobs:
   upload_files:
     runs-on: ubuntu-latest
@@ -68,6 +68,7 @@ jobs:
 
   create_pr:
     runs-on: ubuntu-latest
+    if: "${{ ne(env.has_template_from_the_list_changed, 'false') }}"
     needs: upload_files
     steps:
       - name: Checkout destination repository
