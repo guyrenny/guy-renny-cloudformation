@@ -71,7 +71,6 @@ jobs:
     if: "${{ ne(env.has_template_from_the_list_changed, 'false') }}"    
     needs: upload_files
     steps:
-
       - name: Checkout destination repository
         uses: actions/checkout@v2
         with:
