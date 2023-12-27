@@ -66,6 +66,7 @@ jobs:
           name: replace_template
           path: ./scripts/replace_template.sh
 
+
   create_pr:
     runs-on: ubuntu-latest
     if: "${{ env.has_template_from_the_list_changed }}"
