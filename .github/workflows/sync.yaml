@@ -1,4 +1,4 @@
-name: Sync integration-definitions
+name: Sync integration-definitions test run
 
 on: 
   push:
