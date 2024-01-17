@@ -1,13 +1,13 @@
 # coralogix-aws-shipper
 
-#Created automatically from coralogix/coralogix-aws-shipper#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/master[![license](https://img.shields.io/github/license/coralogix/coralogix-aws-shipper.svg)](https://raw.githubusercontent.com/coralogix/coralogix-aws-shipper/master/LICENSE)
+[![license](https://img.shields.io/github/license/coralogix/coralogix-aws-shipper.svg)](https://raw.githubusercontent.com/coralogix/coralogix-aws-shipper/master/LICENSE)
 ![publish workflow](https://github.com/coralogix/coralogix-aws-shipper/actions/workflows/publish.yaml/badge.svg)
-#Created automatically from coralogix/coralogix-aws-shipper#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/master![Dynamic TOML Badge](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcoralogix%2Fcoralogix-aws-shipper%2Fmaster%2FCargo.toml&query=%24.package.version&label=version)
+![Dynamic TOML Badge](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcoralogix%2Fcoralogix-aws-shipper%2Fmaster%2FCargo.toml&query=%24.package.version&label=version)
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/coralogix/coralogix-aws-shipper)](https://rust-reportcard.xuri.me/report/github.com/coralogix/coralogix-aws-shipper)
 ![Static Badge](https://img.shields.io/badge/status-beta-purple)
 
-## Overview
-Coralogix provides a predefined AWS Lambda function to easily forward your logs to the Coralogix platform.
+#Created automatically from coralogix/coralogix-aws-shipper#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/master## Overview
+This template were created automatically from coralogix/coralogix-aws-serverless.To make a change in the template go to the link belowCoralogix provides a predefined AWS Lambda function to easily forward your logs to the Coralogix platform.
 
 The `coralogix-aws-shipper` supports forwarding of logs for the following AWS Services:
 
