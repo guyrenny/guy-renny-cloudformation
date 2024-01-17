@@ -7,9 +7,8 @@
 ![Static Badge](https://img.shields.io/badge/status-beta-purple)
 
 ## Overview
-/Created automatically from coralogix/coralogix-aws-shipper 
+/Created automatically from coralogix/coralogix-aws-shipper. To make a change to the template please go to the link below
 /https://github.com/coralogix/coralogix-aws-shipper/blob/master/template.yaml
- https://github.com/coralogix/coralogix-aws-shipper/tree/master/
 Coralogix provides a predefined AWS Lambda function to easily forward your logs to the Coralogix platform.
 
 The `coralogix-aws-shipper` supports forwarding of logs for the following AWS Services:
