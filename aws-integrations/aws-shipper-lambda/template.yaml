@@ -1,11 +1,5 @@
-#Created automatically from coralogix/coralogix-aws-shipper
-/#Created automatically from coralogix/coralogix-aws-shipper#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/master/
-/ 
-#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/masterAWSTemplateFormatVersion: '2010-09-09'
- 
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-
-
 
 Description: |
   Send logs to Coralogix from AWS, (S3, SNS, Cloudwatch and more)
@@ -19,17 +13,20 @@ Metadata:
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
     ReadmeUrl: README.md
+    # NOTE: there is a 10 Label limit for metadata in the AWS Serverless Repo metadata
     Labels:
       - coralogix
       - logs
       - sns
       - s3
-      - s3_csv
       - cloudwatch
       - cloudtrail
       - vpc
+      - sqs
+      - kinesis
+      - cloudfront
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 0.0.4
+    SemanticVersion: 0.0.10
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-shipper
 
   AWS::CloudFormation::Interface:
@@ -53,24 +50,38 @@ Metadata:
           - S3KeySuffix
           - NewlinePattern
           - SNSTopicArn
+          - SQSTopicArn
           - CSVDelimiter
+
 
       - Label:
           default: Cloudwatch configuration
         Parameters:
           - CloudWatchLogGroupName
-
+      - Label:
+          default: Kinesis configuration
+        Parameters:
+          - KinesisStreamArn
       - Label:
           default: SNS configuration
         Parameters:
           - SNSIntegrationTopicArn
-
+      - Label:
+          default: SQS configuration
+        Parameters:
+          - SQSIntegrationTopicArn
+      - Label:
+          default: Kinesis configuration
+        Parameters:
+          - KinesisStreamArn
       - Label:
           default: Generic Config
         Parameters:
           - NotificationEmail
           - BlockingPattern
           - SamplingRate
+          - AddMetadata
+
 
       - Label:
           default: Lambda configuration
@@ -91,14 +102,14 @@ Parameters:
   CoralogixRegion:
     Type: String
     Description: |
-      The Coralogix location region, possible options are [Europe, Europe2, India, Singapore, US, US2]
+      The Coralogix location region, possible options are [EU1, EU2, AP1, AP2, US1, US2, Custom]
       If this value is set to Custom you must specify the Custom Domain to use via the CustomDomain parameter.
     AllowedValues:
-      - Europe
-      - Europe2
-      - India
-      - Singapore
-      - US
+      - EU1
+      - EU2
+      - AP1
+      - AP2
+      - US1
       - US2
       - Custom
     Default: Custom
@@ -130,6 +141,12 @@ Parameters:
     Description: Regular expression to detect a new log line for multiline logs from S3 source, e.g., use expression \n(?=\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}\.\d{3})
     Default: ''
   
+  AddMetadata:
+    Type: String
+    Description: |
+      Add metadata to the log message. Expects comma separated values. Options are bucket_name,key_name,stream_name
+    Default: ''
+
   BlockingPattern:
     Type: String
     Description: Regular expression to detect lines that should be excluded from sent to Coralogix
@@ -171,7 +188,7 @@ Parameters:
     Type: String
     Description: |
       The AWS S3 path prefix to watch. This value is ignored
-      when the SNSTopicArn parameter is provided.
+      when the SNSTopicArn / SQSTopicArn parameter is provided.
     MaxLength: 1024
     Default: ''
 
@@ -196,20 +213,30 @@ Parameters:
     MinValue: 30
     MaxValue: 900
     Default: 300
-
+  
   SNSTopicArn:
     Type: String
     Description: The ARN for the SNS topic that contains the SNS subscription responsible for retrieving logs from Amazon S3
     Default: ''
-
+  SQSTopicArn:
+    Type: String
+    Description: The ARN for the SQS topic that contains the SQS subscription responsible for retrieving logs from Amazon S3
+    Default: ''
+  SQSIntegrationTopicArn:
+    Type: String
+    Description: The ARN of SQS topic to subscribe to retrieving messages
+    Default: ''
   SNSIntegrationTopicArn:
     Type: String
     Description: The ARN of SNS topic to subscribe to retrieving messages
     Default: ''
-
+  KinesisStreamArn:
+    Type: String
+    Description: The ARN of Kinesis stream to subscribe to retrieving messages
+    Default: ''
   IntegrationType:
     Type: String
-    Description: 'The integration type. Can be one of: S3, CloudTrail, VpcFlow, CloudWatch, S3Csv, Sns'
+    Description: 'The integration type. Can be one of: S3, CloudTrail, VpcFlow, CloudWatch, S3Csv, Sns, Sqs, Kinesis, CloudFront'
     AllowedValues:
       - S3
       - CloudTrail
@@ -217,6 +244,9 @@ Parameters:
       - VpcFlow
       - S3Csv
       - Sns
+      - Sqs
+      - Kinesis
+      - CloudFront
     Default: S3
 
   CloudWatchLogGroupName:
@@ -267,15 +297,15 @@ Parameters:
 
 Mappings:
   CoralogixRegionMap:
-    Europe:
+    EU1:
       Domain: coralogix.com
-    Europe2:
+    EU2:
       Domain: eu2.coralogix.com
-    India:
+    AP1:
       Domain: coralogix.in
-    Singapore:
+    AP2:
       Domain: coralogixsg.com
-    US:
+    US1:
       Domain: coralogix.us
     US2:
       Domain: cx498.coralogix.com
@@ -286,14 +316,21 @@ Conditions:
   BlockPatternNotSet: !Equals [ !Ref BlockingPattern, '' ]
   CSVDelimiterUse: !Equals [!Ref IntegrationType, 'S3Csv']
   NewlinePatternNotSet: !Equals [ !Ref NewlinePattern, '' ]
+  AddMetadataNotSet: !Equals [ !Ref AddMetadata, '']
   IsSNSIntegration: !Equals [ !Ref IntegrationType, 'Sns' ]
+  IsSQSIntegration: !Equals [ !Ref IntegrationType, 'Sqs' ]
+  IsKinesisIntegration: !Equals [ !Ref IntegrationType, 'Kinesis' ]
   IsNotificationEnabled: !Not [ !Equals [ !Ref NotificationEmail, '' ] ]
   IsCustomDomain: !Equals [ !Ref CoralogixRegion, Custom ]
   S3KeyPrefixIsSet: !Not [ !Equals [ !Ref S3KeyPrefix, '' ] ]
   S3SuffixIsSet: !Not [ !Equals [ !Ref S3KeySuffix, '' ] ]
-  IsCloudTrailIntegration: !Equals [ !Ref IntegrationType, 'CloudTrail' ]
   IsApiKeyNotArn: !Equals [!Ref ApiKey , !Select [0,!Split [":" , !Ref ApiKey]]]
-  # IsVPCFlowLogsIntegration: !Equals [ !Ref IntegrationType, 'VpcFlow' ]
+  ApiKeyIsArn: !Not [!Condition IsApiKeyNotArn]
+  UseCloudwatchLogsWithSecretPolicy: !And
+    - !Condition UseCloudwatchLogs
+    - !Or
+      - !Condition StoreAPIKeyInSecretsManager
+      - !Condition ApiKeyIsArn
   UseAWSDefaultPrefix: !Or 
     - !Equals [ !Ref IntegrationType, 'VpcFlow' ]
     - !Equals [ !Ref IntegrationType, 'CloudTrail' ]
@@ -303,6 +340,18 @@ Conditions:
     - !Equals [ !Ref StoreAPIKeyInSecretsManager, 'true' ]
     - !Condition IsApiKeyNotArn
   IsPrivateLink: !Equals [ !Ref UsePrivateLink, 'true' ]
+  UseSQSTopicARN: 
+    Fn::Or: 
+    - !And 
+      - !Not [ !Equals [ !Ref SQSTopicArn, '' ] ]
+      - !Equals [ !Ref CloudWatchLogGroupName, '' ]
+    - !And 
+      - !Not [ !Equals [ !Ref SQSIntegrationTopicArn, '' ] ]
+      - !Equals [ !Ref CloudWatchLogGroupName, '' ]
+  UseKinesisStreamARN: !And 
+      - !Not [ !Equals [ !Ref KinesisStreamArn, '' ] ]
+      - !Equals [ !Ref CloudWatchLogGroupName, '' ]
+
   UseSNSTopicARN: 
     Fn::Or: 
     - !And 
@@ -324,6 +373,8 @@ Conditions:
   UseDefault: !And 
     - !Not [ !Condition UseCloudwatchLogs ]
     - !Not [ !Condition UseSNSTopicARN  ]
+    - !Not [ !Condition UseSQSTopicARN  ]
+    - !Not [ !Condition UseKinesisStreamARN  ]
 
   UseDefaultWithNotification: !And
     - !Condition UseDefault
@@ -332,16 +383,26 @@ Conditions:
   UseCloudwatchLogsWithNotification: !And
     - !Condition UseCloudwatchLogs
     - !Condition IsNotificationEnabled
- 
+
+  UseKinesisTopicARNWithNotification: !And
+    - !Condition UseKinesisStreamARN
+    - !Condition IsNotificationEnabled
+  UseSQSTopicARNWithNotification: !And
+    - !Condition UseSQSTopicARN
+    - !Condition IsNotificationEnabled
+
   UseSNSTopicARNWithNotification: !And
     - !Condition UseSNSTopicARN
     - !Condition IsNotificationEnabled
+  
 
 Rules:
   ValidateCloudWatchLogs:
     RuleCondition: !And 
       - !Not [ !Equals [ !Ref CloudWatchLogGroupName, '' ] ]
       - !Equals [ !Ref SNSTopicArn, '' ]
+      - !Equals [ !Ref SQSTopicArn, '' ]
+      - !Equals [ !Ref KinesisStreamArn, '' ]
     Assertions:
       - Assert: !Not [ !Equals [ !Ref CloudWatchLogGroupName, '' ] ]
         AssertDescription: CloudWatchLogGroupName must be set when IntegrationType is set to cloudwatch
@@ -353,6 +414,15 @@ Rules:
     Assertions:
       - Assert: !Not [ !Equals [ !Ref CustomDomain, '' ] ]
         AssertDescription: CustomDomain must be set when CoralogixRegion is set to Custom
+  ValidateSQSTopicArnParam:
+    RuleCondition: !And
+      - !Not [ !Equals [ !Ref SQSTopicArn, '' ] ]
+      - !Equals [ !Ref CloudWatchLogGroupName, '' ]
+    Assertions:
+      - Assert: !And 
+          - !Equals [ !Ref S3KeyPrefix, '' ]
+          - !Equals [ !Ref S3KeySuffix, '' ]
+        AssertDescription: S3Prefix and S3Suffix must be empty when SQSTopicArn is set
 
   ValidateSNSTopicArnParam:
     RuleCondition: !And
@@ -425,6 +495,10 @@ Globals:
         SAMPLING: !Ref SamplingRate
         INTEGRATION_TYPE: !Ref IntegrationType
         RUST_LOG: !Ref LogLevel
+        ADD_METADATA: !If
+          - AddMetadataNotSet
+          - !Ref AWS::NoValue
+          - !Ref AddMetadata
         NEWLINE_PATTERN: !If
           - NewlinePatternNotSet
           - !Ref AWS::NoValue
@@ -477,11 +551,29 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref S3BucketName
-        - Statement:
-          - Effect: Allow
-            Action:
-              - 'secretsmanager:GetSecretValue'
-            Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*'
+        - !If
+          - ApiKeyIsArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource: !Ref ApiKey
+          - !If
+            - StoreAPIKeyInSecretsManager
+            - Statement:
+                - Effect: Allow
+                  Action:
+                    - 'secretsmanager:GetSecretValue'
+                  Resource: !Ref Secret
+            # Note, this is a hack to get around the fact that you can't have a condition on a policy
+            # If the Apikey is not an ARn or we are not storing the key in secrets manager, then we don't need access
+            # to secrets manager
+            - Statement:
+                - Effect: Deny
+                  Action:
+                    - 'secretsmanager:GetSecretValue'
+                  Resource: '*'
+
 
   LambdaLogGroupDefault:
     Condition: UseDefault
@@ -551,11 +643,28 @@ Resources:
           - !Ref AWS::NoValue
           - S3ReadPolicy: 
               BucketName: !Ref S3BucketName
-        - Statement:
-            - Effect: Allow
-              Action:
-                - 'secretsmanager:GetSecretValue'
-              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*'
+        - !If
+          - ApiKeyIsArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource: !Ref ApiKey
+          - !If
+            - StoreAPIKeyInSecretsManager
+            - Statement:
+                - Effect: Allow
+                  Action:
+                    - 'secretsmanager:GetSecretValue'
+                  Resource: !Ref Secret
+            # Note, this is a hack to get around the fact that you can't have a condition on a policy
+            # If the Apikey is not an ARn or we are not storing the key in secrets manager, then we don't need access
+            # to secrets manager
+            - Statement:
+                - Effect: Deny
+                  Action:
+                    - 'secretsmanager:GetSecretValue'
+                  Resource: '*'
       EventInvokeConfig: 
         DestinationConfig:
           OnFailure:
@@ -607,15 +716,67 @@ Resources:
     Properties:
       CodeUri: .
       Policies:
-        - Statement:
-          - Effect: Allow
-            Action:
-              - 'secretsmanager:GetSecretValue'
-            Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*'
+        - !If
+          - ApiKeyIsArn
+          - Statement:
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource: !Ref ApiKey
+          - !If
+            - StoreAPIKeyInSecretsManager
+            - Statement:
+                - Effect: Allow
+                  Action:
+                    - 'secretsmanager:GetSecretValue'
+                  Resource: !Ref Secret
+            # Note, this is a hack to get around the fact that you can't have a condition on a policy
+            # If the Apikey is not an ARn or we are not storing the key in secrets manager, then we don't need access
+            # to secrets manager
+            - Statement:
+                - Effect: Deny
+                  Action:
+                    - 'secretsmanager:GetSecretValue'
+                  Resource: '*'
+
+        # - !If
+        #   - ApiKeyIsArn
+        #   - Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - 'secretsmanager:GetSecretValue'
+        #         Resource: !Ref ApiKey
+        #   - !If
+        #     - StoreAPIKeyInSecretsManager
+        #     - Statement:
+        #         - Effect: Allow
+        #           Action:
+        #             - 'secretsmanager:GetSecretValue'
+        #           Resource: !Ref Secret
+        #     - !Ref AWS::NoValue
       EventInvokeConfig: 
         DestinationConfig:
           OnFailure:
             Type: SNS
+
+  LambdaFunctionCloudwatchLogsPolicies:
+    Condition: UseCloudwatchLogsWithSecretPolicy
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      Path: "/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "secretsmanager:GetSecretValue"
+            Resource: !If
+              - ApiKeyIsArn
+              - !Ref ApiKey
+              - !If
+                - StoreAPIKeyInSecretsManager
+                - !Ref Secret
+                - !Ref AWS::NoValue
 
   LambdaLogGroupCloudwatchLogs:
     Condition: UseCloudwatchLogs
@@ -652,6 +813,124 @@ Resources:
       Principal: logs.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
       SourceArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
+  
+  ################################
+  # ----- With SQS TopiC ------- #
+  ################################
+
+  LambdaFunctionWithSQSTopic:
+    Condition: UseSQSTopicARN
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Policies:
+        - !If 
+          - IsSQSIntegration
+          - !Ref AWS::NoValue
+          - S3ReadPolicy: 
+              BucketName: !Ref S3BucketName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*'
+      EventInvokeConfig: 
+        DestinationConfig:
+          OnFailure:
+            Type: SNS
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !If
+              - IsSQSIntegration
+              - !Ref SQSIntegrationTopicArn
+              - !Ref SQSTopicArn
+
+  LambdaLogGroupWithSQSTopic:
+    Condition: UseSQSTopicARN
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${LambdaFunctionWithSQSTopic}'
+      RetentionInDays: !Ref LambdaLogRetention
+
+  LambdaFunctionInvokePermissionWithSQSTopic:
+    Type: AWS::Lambda::Permission
+    Condition: UseSQSTopicARN
+    Properties:
+      FunctionName: !GetAtt [ LambdaFunctionWithSQSTopic, Arn ]
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:s3:::${S3BucketName}"
+
+  LambdaFunctionNotificationSubscriptionWithSQSTopic:
+    Type: AWS::SNS::Subscription
+    Condition: UseSQSTopicARNWithNotification
+    Properties:
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+      TopicArn: !Ref LambdaFunctionWithSQSTopic.DestinationTopic
+
+  ################################
+  # ----- With Kinesis TopiC ------- #
+  ################################
+
+  LambdaFunctionWithKinesisTopic:
+    Condition: UseKinesisStreamARN
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Policies:
+        - !If 
+          - IsKinesisIntegration
+          - !Ref AWS::NoValue
+          - S3ReadPolicy: 
+              BucketName: !Ref S3BucketName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*'
+      EventInvokeConfig: 
+        DestinationConfig:
+          OnFailure:
+            Type: SNS
+      Events:
+        KinesisEvent:
+          Type: Kinesis
+          Properties:
+            StartingPosition: LATEST
+            Stream: !Ref KinesisStreamArn
+
+  LambdaLogGroupWithKinesisTopic:
+    Condition: UseKinesisStreamARN
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${LambdaFunctionWithKinesisTopic}'
+      RetentionInDays: !Ref LambdaLogRetention
+
+  LambdaFunctionInvokePermissionWithKinesisTopic:
+    Type: AWS::Lambda::Permission
+    Condition: UseKinesisStreamARN
+    Properties:
+      FunctionName: !GetAtt [ LambdaFunctionWithKinesisTopic, Arn ]
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:s3:::${S3BucketName}"
+
+  LambdaFunctionNotificationSubscriptionWithKinesisTopic:
+    Type: AWS::SNS::Subscription
+    Condition: UseKinesisTopicARNWithNotification
+    Properties:
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+      TopicArn: !Ref LambdaFunctionWithKinesisTopic.DestinationTopic
 
   ################################
   # ----- Custom Resource -----  #
