@@ -1,10 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Send logs to Coralogix from AWS, (S3, SNS, Cloudwatch and more)
-
+Description: |
+  Send logs to Coralogix from AWS, (S3, SNS, Cloudwatch and more)
+  This is a beta release, please report any issues to:
+  github.com/coralogix/coralogix-aws-shipper/issues
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: Coralogix-Logs
+    Name: coralogix-aws-shipper
     Description: Send logs to Coralogix.
     Author: Coralogix
     SpdxLicenseId: Apache-2.0
@@ -16,8 +18,11 @@ Metadata:
       - sns
       - s3
       - s3_csv
+      - cloudwatch
+      - cloudtrail
+      - vpc
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 2.1.0
+    SemanticVersion: 0.0.4
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-shipper
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -32,19 +37,24 @@ Metadata:
           - ApiKey
           - StoreAPIKeyInSecretsManager
       - Label:
-          default: Integration S3/Cloudtrail/vpcflowlogs/s3_csv configuration
+          default: S3/CloudTrail/VpcFlow/S3Csv configuration
         Parameters:
           - S3BucketName
           - S3KeyPrefix
           - S3KeySuffix
           - NewlinePattern
           - SNSTopicArn
+          - CSVDelimiter
       - Label:
-          default: Integration Cloudwatch configuration
+          default: Cloudwatch configuration
         Parameters:
           - CloudWatchLogGroupName
       - Label:
-          default: Integration Generic Config
+          default: SNS configuration
+        Parameters:
+          - SNSIntegrationTopicArn
+      - Label:
+          default: Generic Config
         Parameters:
           - NotificationEmail
           - BlockingPattern
@@ -56,7 +66,6 @@ Metadata:
           - FunctionTimeout
           - LogLevel
           - LambdaLogRetention
-          - LogsPerBatch
       - Label:
           default: VPC configuration Optional
         Parameters:
@@ -68,7 +77,7 @@ Parameters:
     Type: String
     Description: |
       The Coralogix location region, possible options are [Europe, Europe2, India, Singapore, US, US2]
-      If this value is set to Custom you must specify the Custom Domain to use via the CustomDomain parameter
+      If this value is set to Custom you must specify the Custom Domain to use via the CustomDomain parameter.
     AllowedValues:
       - Europe
       - Europe2
@@ -80,7 +89,7 @@ Parameters:
     Default: Custom
   CustomDomain:
     Type: String
-    Description: The Custom Domain. If set, will be the domain used to send telemetry (e.g. coralogix.com, private.coralogix.com)
+    Description: The Custom Domain. If set, will be the domain used to send telemetry (e.g. cx123.coralogix.com)
     Default: ''
   ApiKey:
     Type: String
@@ -98,7 +107,7 @@ Parameters:
     Description: The subsystem name of your application (https://coralogix.com/docs/application-and-subsystem-names/)
   NewlinePattern:
     Type: String
-    Description: Regular expression to detect a new log line for multiline logs from S3 source, e.g., use expression \n(?:\r\n|\r|\n)
+    Description: Regular expression to detect a new log line for multiline logs from S3 source, e.g., use expression \n(?=\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}\.\d{3})
     Default: ''
   BlockingPattern:
     Type: String
@@ -111,32 +120,39 @@ Parameters:
     Default: 1
   LogLevel:
     Type: String
-    Description: 'Log level for the Lambda function. Can be one of: INFO, WARNING, ERROR, DEBUG'
+    Description: 'Log level for the Lambda function. Can be one of: INFO, WARN, ERROR, DEBUG'
     AllowedValues:
       - "INFO"
-      - "WARNING"
+      - "WARN"
       - "ERROR"
       - "DEBUG"
-    Default: "INFO"
-  LogsPerBatch:
-    Type: Number
-    Description: Number of logs to send in each batch
-    MinValue: 1
-    MaxValue: 10000
-    Default: 500
+    Default: "WARN"
   S3BucketName:
     Type: String
-    Description: The name of the AWS S3 bucket to watch
+    Description: |
+      The name of the AWS S3 bucket to watch
     AllowedPattern: '^[0-9A-Za-z\.\-_]*(?<!\.)$'
+    Default: ""
     MaxLength: 63
+  CSVDelimiter:
+    Type: String
+    Description: |
+      The delimiter used in the CSV file to process
+      This value is applied when the S3Csv integration type is selected
+    MaxLength: 1
+    Default: ','
   S3KeyPrefix:
     Type: String
-    Description: The AWS S3 path prefix to watch
+    Description: |
+      The AWS S3 path prefix to watch. This value is ignored
+      when the SNSTopicArn parameter is provided.
     MaxLength: 1024
     Default: ''
   S3KeySuffix:
     Type: String
-    Description: The AWS S3 path suffix to watch
+    Description: |
+      The AWS S3 path suffix to watch. This value is ignored
+      when the SNSTopicArn parameter is provided.
     MaxLength: 1024
     Default: ''
   FunctionMemorySize:
@@ -153,18 +169,23 @@ Parameters:
     Default: 300
   SNSTopicArn:
     Type: String
-    Description: The ARN of SNS topic that will contain the SNS subscription for retrieving logs from S3
+    Description: The ARN for the SNS topic that contains the SNS subscription responsible for retrieving logs from Amazon S3
+    Default: ''
+  SNSIntegrationTopicArn:
+    Type: String
+    Description: The ARN of SNS topic to subscribe to retrieving messages
     Default: ''
   IntegrationType:
     Type: String
-    Description: 'The integration type. Can be one of: s3, cloudtrail, vpcflowlogs, cloudwatch, s3_csv'
+    Description: 'The integration type. Can be one of: S3, CloudTrail, VpcFlow, CloudWatch, S3Csv, Sns'
     AllowedValues:
-      - s3
-      - cloudtrail
-      - cloudwatch
-      - vpcflowlogs
-      - s3_csv
-    Default: s3
+      - S3
+      - CloudTrail
+      - CloudWatch
+      - VpcFlow
+      - S3Csv
+      - Sns
+    Default: S3
   CloudWatchLogGroupName:
     Type: String
     Description: 'A comma separated list of CloudWatch log groups names to watch  e.g, (log-group1,log-group2,log-group3)'
@@ -218,16 +239,34 @@ Mappings:
     Custom:
       Domain: ""
 Conditions:
+  BlockPatternNotSet: !Equals [!Ref BlockingPattern, '']
+  CSVDelimiterUse: !Equals [!Ref IntegrationType, 'S3Csv']
+  NewlinePatternNotSet: !Equals [!Ref NewlinePattern, '']
+  IsSNSIntegration: !Equals [!Ref IntegrationType, 'Sns']
   IsNotificationEnabled: !Not [!Equals [!Ref NotificationEmail, '']]
   IsCustomDomain: !Equals [!Ref CoralogixRegion, Custom]
   S3KeyPrefixIsSet: !Not [!Equals [!Ref S3KeyPrefix, '']]
   S3SuffixIsSet: !Not [!Equals [!Ref S3KeySuffix, '']]
-  IsCloudTrailIntegration: !Equals [!Ref IntegrationType, 'cloudtrail']
-  StoreAPIKeyInSecretsManager: !Equals [!Ref StoreAPIKeyInSecretsManager, 'true']
+  IsCloudTrailIntegration: !Equals [!Ref IntegrationType, 'CloudTrail']
+  IsApiKeyNotArn: !Equals [!Ref ApiKey, !Select [0, !Split [":", !Ref ApiKey]]]
+  # IsVPCFlowLogsIntegration: !Equals [ !Ref IntegrationType, 'VpcFlow' ]
+  UseAWSDefaultPrefix: !Or
+    - !Equals [!Ref IntegrationType, 'VpcFlow']
+    - !Equals [!Ref IntegrationType, 'CloudTrail']
+  UseAWSDefaultVpcFlowSuffix: !Equals [!Ref IntegrationType, 'VpcFlow']
+  UseAWSDefaultCloudTrailSuffix: !Equals [!Ref IntegrationType, 'CloudTrail']
+  StoreAPIKeyInSecretsManager: !And
+    - !Equals [!Ref StoreAPIKeyInSecretsManager, 'true']
+    - !Condition IsApiKeyNotArn
   IsPrivateLink: !Equals [!Ref UsePrivateLink, 'true']
-  UseSNSTopicARN: !And
-    - !Not [!Equals [!Ref SNSTopicArn, '']]
-    - !Equals [!Ref CloudWatchLogGroupName, '']
+  UseSNSTopicARN:
+    Fn::Or:
+      - !And
+        - !Not [!Equals [!Ref SNSTopicArn, '']]
+        - !Equals [!Ref CloudWatchLogGroupName, '']
+      - !And
+        - !Not [!Equals [!Ref SNSIntegrationTopicArn, '']]
+        - !Equals [!Ref CloudWatchLogGroupName, '']
   UseVpcConfig: !And
     - !Not [!Equals [!Ref LambdaSubnetID, '']]
     - !Not [!Equals [!Ref LambdaSecurityGroupID, '']]
@@ -247,11 +286,29 @@ Conditions:
     - !Condition UseSNSTopicARN
     - !Condition IsNotificationEnabled
 Rules:
+  ValidateCloudWatchLogs:
+    RuleCondition: !And
+      - !Not [!Equals [!Ref CloudWatchLogGroupName, '']]
+      - !Equals [!Ref SNSTopicArn, '']
+    Assertions:
+      - Assert: !Not [!Equals [!Ref CloudWatchLogGroupName, '']]
+        AssertDescription: CloudWatchLogGroupName must be set when IntegrationType is set to cloudwatch
+      - Assert: !Equals [!Ref S3BucketName, '']
+        AssertDescription: S3Bucket parameter must be empty when IntegrationType is set to cloudwatch
   ValidateCustomDomain:
     RuleCondition: !Equals [!Ref CoralogixRegion, Custom]
     Assertions:
       - Assert: !Not [!Equals [!Ref CustomDomain, '']]
         AssertDescription: CustomDomain must be set when CoralogixRegion is set to Custom
+  ValidateSNSTopicArnParam:
+    RuleCondition: !And
+      - !Not [!Equals [!Ref SNSTopicArn, '']]
+      - !Equals [!Ref CloudWatchLogGroupName, '']
+    Assertions:
+      - Assert: !And
+          - !Equals [!Ref S3KeyPrefix, '']
+          - !Equals [!Ref S3KeySuffix, '']
+        AssertDescription: S3Prefix and S3Suffix must be empty when SNSTopicArn is set
   ValidatePrivateLinkConfig:
     RuleCondition: !Equals [!Ref UsePrivateLink, 'true']
     Assertions:
@@ -268,6 +325,20 @@ Globals:
       - arm64
     MemorySize: !Ref FunctionMemorySize
     Timeout: !Ref FunctionTimeout
+    # EventInvokeConfig: !If
+    #   - IsNotificationEnabled
+    #   - !Ref AWS::NoValue
+    #   - DestinationConfig:
+    #       OnFailure:
+    #         Type: SNS
+
+    VpcConfig: !If
+      - UseVpcConfig
+      - SecurityGroupIds:
+          - !Ref LambdaSecurityGroupID
+        SubnetIds:
+          - !Ref LambdaSubnetID
+      - !Ref AWS::NoValue
     Environment:
       Variables:
         CORALOGIX_ENDPOINT: !If
@@ -294,12 +365,21 @@ Globals:
           - !Ref ApiKey
         APP_NAME: !Ref ApplicationName
         SUB_NAME: !Ref SubsystemName
-        NEWLINE_PATTERN: !Ref NewlinePattern
-        BLOCKING_PATTERN: !Ref BlockingPattern
         SAMPLING: !Ref SamplingRate
         INTEGRATION_TYPE: !Ref IntegrationType
         RUST_LOG: !Ref LogLevel
-        LOGS_PER_BATCH: !Ref LogsPerBatch
+        NEWLINE_PATTERN: !If
+          - NewlinePatternNotSet
+          - !Ref AWS::NoValue
+          - !Ref NewlinePattern
+        BLOCKING_PATTERN: !If
+          - BlockPatternNotSet
+          - !Ref AWS::NoValue
+          - !Ref BlockingPattern
+        CSV_DELIMITER: !If
+          - CSVDelimiterUse
+          - !Ref CSVDelimiter
+          - !Ref AWS::NoValue
 Resources:
   Secret:
     Type: 'AWS::SecretsManager::Secret'
@@ -331,6 +411,10 @@ Resources:
       CodeUri:
         Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
         Key: coralogix-aws-shipper.zip
+      EventInvokeConfig:
+        DestinationConfig:
+          OnFailure:
+            Type: SNS
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref S3BucketName
@@ -339,18 +423,6 @@ Resources:
               Action:
                 - 'secretsmanager:GetSecretValue'
               Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*'
-      EventInvokeConfig:
-        DestinationConfig:
-          OnFailure:
-            Type: SNS
-      VpcConfig:
-        Fn::If:
-          - UseVpcConfig
-          - SecurityGroupIds:
-              - !Ref LambdaSecurityGroupID
-            SubnetIds:
-              - !Ref LambdaSubnetID
-          - Ref: AWS::NoValue
   LambdaLogGroupDefault:
     Condition: UseDefault
     DeletionPolicy: Retain
@@ -380,14 +452,17 @@ Resources:
         - S3SuffixIsSet
         - !Ref S3KeySuffix
         - !If
-          - IsCloudTrailIntegration
+          - UseAWSDefaultCloudTrailSuffix
           - '.json.gz'
-          - ''
+          - !If
+            - UseAWSDefaultVpcFlowSuffix
+            - '.log.gz'
+            - ""
       Prefix: !If
         - S3KeyPrefixIsSet
         - !Ref S3KeyPrefix
         - !If
-          - IsCloudTrailIntegration
+          - UseAWSDefaultPrefix
           - 'AWSLogs/'
           - ''
   LambdaFunctionNotificationSubscriptionDefault:
@@ -408,8 +483,11 @@ Resources:
         Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
         Key: coralogix-aws-shipper.zip
       Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref S3BucketName
+        - !If
+          - IsSNSIntegration
+          - !Ref AWS::NoValue
+          - S3ReadPolicy:
+              BucketName: !Ref S3BucketName
         - Statement:
             - Effect: Allow
               Action:
@@ -423,15 +501,10 @@ Resources:
         SNSEvent:
           Type: SNS
           Properties:
-            Topic: !Ref SNSTopicArn
-      VpcConfig:
-        Fn::If:
-          - UseVpcConfig
-          - SecurityGroupIds:
-              - !Ref LambdaSecurityGroupID
-            SubnetIds:
-              - !Ref LambdaSubnetID
-          - Ref: AWS::NoValue
+            Topic: !If
+              - IsSNSIntegration
+              - !Ref SNSIntegrationTopicArn
+              - !Ref SNSTopicArn
   LambdaLogGroupWithSNSTopic:
     Condition: UseSNSTopicARN
     DeletionPolicy: Retain
@@ -467,8 +540,6 @@ Resources:
         Bucket: !Sub 'coralogix-serverless-repo-${AWS::Region}'
         Key: coralogix-aws-shipper.zip
       Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref S3BucketName
         - Statement:
             - Effect: Allow
               Action:
@@ -478,14 +549,6 @@ Resources:
         DestinationConfig:
           OnFailure:
             Type: SNS
-      VpcConfig:
-        Fn::If:
-          - UseVpcConfig
-          - SecurityGroupIds:
-              - !Ref LambdaSecurityGroupID
-            SubnetIds:
-              - !Ref LambdaSubnetID
-          - Ref: AWS::NoValue
   LambdaLogGroupCloudwatchLogs:
     Condition: UseCloudwatchLogs
     DeletionPolicy: Retain
@@ -552,7 +615,7 @@ Resources:
               Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
       InlineCode: !If
         - UseCloudwatchLogs
-        - "import json\nimport boto3\nimport cfnresponse\n\nprint(\"Loading function\")\n\ndef lambda_handler(event, context):\n    print(\"Received event:\", json.dumps(event, indent=2))\n    try:        \n        lambda_arn = event['ResourceProperties']['LambdaArn']\n        lambda_client = boto3.client('lambda')\n\n        if event['RequestType'] in ['Create', 'Update']:\n            StringlogGroupName = event['ResourceProperties']['CloudwatchGroup']\n            logGroupName = StringlogGroupName.split(',')\n            cloudwatch_logs = boto3.client('logs')\n            for log_group in logGroupName:\n                cloudwatch_logs.put_subscription_filter(\n                    destinationArn=event['ResourceProperties']['LambdaArn'],\n                    filterName='lambda-cloudwatch-trigger',\n                    filterPattern='',\n                    logGroupName=log_group\n                )\n        responseStatus = cfnresponse.SUCCESS\n        print(event['RequestType'], \"request completed....\")\n    except Exception as e:\n        print(\"Failed to process:\", e)\n        responseStatus = cfnresponse.FAILED\n    finally:\n        print(\"Sending response to custom resource\")\n        cfnresponse.send(\n            event,\n            context,\n            responseStatus,\n            {},\n            event.get('PhysicalResourceId', context.aws_request_id)\n        )\n"
+        - "import json\nimport boto3\nimport cfnresponse\n\nprint(\"Loading function\")\n\ndef lambda_handler(event, context):\n    print(\"Received event:\", json.dumps(event, indent=2))\n    try:        \n        lambda_arn = event['ResourceProperties']['LambdaArn']\n        lambda_client = boto3.client('lambda')\n\n        if event['RequestType'] in ['Create', 'Update']:\n            StringlogGroupName = event['ResourceProperties']['CloudwatchGroup']\n            logGroupName = StringlogGroupName.split(',')\n            cloudwatch_logs = boto3.client('logs')\n            for log_group in logGroupName:\n                cloudwatch_logs.put_subscription_filter(\n                    destinationArn=event['ResourceProperties']['LambdaArn'],\n                    filterName='coralogix-aws-shipper-cloudwatch-trigger',\n                    filterPattern='',\n                    logGroupName=log_group\n                )\n        responseStatus = cfnresponse.SUCCESS\n        print(event['RequestType'], \"request completed....\")\n    except Exception as e:\n        print(\"Failed to process:\", e)\n        responseStatus = cfnresponse.FAILED\n    finally:\n        print(\"Sending response to custom resource\")\n        cfnresponse.send(\n            event,\n            context,\n            responseStatus,\n            {},\n            event.get('PhysicalResourceId', context.aws_request_id)\n        )\n"
         - |
           #!/usr/bin/python
           # -*- coding: utf-8 -*-
