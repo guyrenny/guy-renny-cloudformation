@@ -6,8 +6,10 @@
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/coralogix/coralogix-aws-shipper)](https://rust-reportcard.xuri.me/report/github.com/coralogix/coralogix-aws-shipper)
 ![Static Badge](https://img.shields.io/badge/status-beta-purple)
 
-#Created automatically from coralogix/coralogix-aws-shipper#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/master## Overview
-This template were created automatically from coralogix/coralogix-aws-serverless.To make a change in the template go to the link belowCoralogix provides a predefined AWS Lambda function to easily forward your logs to the Coralogix platform.
+## Overview
+/^/#Created automatically from coralogix/coralogix-aws-shipper#Link to the repo: https://github.com/coralogix/coralogix-aws-shipper/tree/master/
+/^/This template were created automatically from coralogix/coralogix-aws-serverless.To make a change in the template go to the link below/
+Coralogix provides a predefined AWS Lambda function to easily forward your logs to the Coralogix platform.
 
 The `coralogix-aws-shipper` supports forwarding of logs for the following AWS Services:
 
