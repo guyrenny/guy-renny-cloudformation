@@ -78,7 +78,7 @@ echo "
       ApplicationNameField: !Ref ApplicationName" >> $file
 
 while IFS= read -r parameter; do
-  if [[ $parameter != "ApiKey" ]] && [[ $parameter != "IntegrationId" ]] && [[ $parameter != "ApplicationName" ]] && [[ $parameter != "SubsystemName" ]]; then
+  if [[ $parameter != "ApiKey" ]] && [[ $parameter != "IntegrationId" ]] && [[ $parameter != "ApplicationName" ]] && [[ $parameter != "SubsystemName" ]] && [[ $parameter != "KafkaBrokers" ]] && [[ $parameter != "KafkaSubnets" ]] && [[ $parameter != "KafkaSecurityGroups" ]]; then
     echo "      ${parameter}Field: !Ref $parameter" >> $file
   fi
 done <<< "$parameters"
