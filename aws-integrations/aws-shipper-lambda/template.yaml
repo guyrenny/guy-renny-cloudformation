@@ -21,11 +21,8 @@ Metadata:
       - cloudwatch
       - cloudtrail
       - vpc
-      - sqs
-      - kinesis
-      - cloudfront
     HomePageUrl: https://coralogix.com
-    SemanticVersion: 0.0.12
+    SemanticVersion: 0.0.14
     SourceCodeUrl: https://github.com/coralogix/coralogix-aws-shipper
   AWS::CloudFormation::Interface:
     ParameterGroups:
