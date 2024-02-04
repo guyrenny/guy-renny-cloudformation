@@ -113,14 +113,6 @@ jobs:
 
       - name: apply changes to the files
         run: |
-          # if [[ $(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+') ]]; then
-          #   branch_name=branch-$(echo "${{ github.event.head_commit.message }}" | grep -oE '[0-9]+' | awk '{ printf $0 }')
-          # elif echo "${{ github.event.head_commit.message }}" | grep -q "#"; then
-          #   branch_name=$(echo "${{ github.event.head_commit.message }}" | cut -d '#' -f 2)
-          #   echo "${{ github.event.head_commit.message }}"
-          # else
-          #   branch_name=update_integration-branch
-          # fi
           branch_name="sync-CloudFormation-branch-$(date +"%m-%d-%H-%M")"
           echo $branch_name
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
