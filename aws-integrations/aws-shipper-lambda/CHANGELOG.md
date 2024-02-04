@@ -1,12 +1,57 @@
 # Changelog
+## v0.0.11 Beta / 2024-01-25
+### 🚀 New components 🚀
+- Added support for AWS MSK and Kafka Integration type
+- Updated Cloudformation template with resources for MSK and Kafka
 
-## v0.0.3 Beta / 2023-12-20
+## v0.0.10 Beta / 2024-01-17
+### 🧰 Bug fixes 🧰
+- Fix typo in Coralogix region selection US --> US1
 
-## 💡 Enhancements 💡
+## v0.0.9 Beta / 2024-01-16
+### 🚀 New components 🚀
+- Added support for Cloudfront Access logs
+
+### 💡 Enhancements 💡
+- Support for adding metadata to logs (bucket_name, key_name, stream_name)
+
+## v0.0.8 Beta / 2024-01-16
+### 🧰 Bug fixes 🧰
+- Fix issue with decompression of some gzip files
+
+## v0.0.7 Beta / 2024-01-08
+### 🚀 New components 🚀
+- Added support for kinesis Text and Cloudwatch Logs
+
+## v0.0.6 Beta / 2024-01-04
+### 🧰 Bug fixes 🧰
+- Allow to choose Sqs as integrationType
+  
+## v0.0.5 Beta / 2024-01-03
+### 🧰 Bug fixes 🧰
+- Bug Fix in SNS email notification
+
+## v0.0.4 Beta / 2024-01-03
+
+### 🚀 New components 🚀
+- Added support for sqs for s3 and sqs messages
+
+### 🧰 Bug fixes 🧰
+- Fix Sns and Sqs space in key bug
+
+## v0.0.3 Beta / 2023-12-26
+
+### 🛑 Breaking changes 🛑
+- Update the CoralogixRegion param list to be the same as the list in the [website](https://coralogix.com/docs/coralogix-domain/)
+
+### 💡 Enhancements 💡
 - Moved internal logic to lib.rs and Added Integration tests
+- Added s3_key variable for app and subsystem name
 
 ### 🧰 Bug fixes 🧰
 - Fixed readme badge link for version
+- Reduce Secret Manage IAM permissions
+- Added default App or Subsystem name.
 
 ## v0.0.2 Beta / 2023-13-15
 
