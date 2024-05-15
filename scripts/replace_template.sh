@@ -84,7 +84,7 @@ elif [[ $file == *"firehose"* ]]; then
       IntegrationName: !Ref \"AWS::StackName\"
       SubsystemName: !Ref SubsystemName
       ApplicationName: !Ref ApplicationName" >> $file
-else
+elif [[ $file == *"resource-metadata"* ]]; then
   echo "
       CoralogixDomain: !If
         - IsRegionCustomUrlEmpty
