@@ -70,7 +70,7 @@ if [[ $file == *"aws-shipper-lambda"* ]]; then
 else
   echo "
       CoralogixDomain: !If
-        - IsRegionCustomUrlEmpty
+        - IsCustomDomain
         - !Ref CustomDomain
         - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
       CoralogixApiKey: !Ref ApiKey" >> $file
