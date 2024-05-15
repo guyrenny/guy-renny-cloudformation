@@ -5,6 +5,7 @@ file=$1
 
 file_contine_output=false
 if grep -q "Outputs" "$file"; then
+    yq 'with_entries(select(.key | test("Outputs")))' $file >> outputs.yaml
     yq eval --inplace 'del(.Outputs)' $file >> outputs.yaml
     file_contine_output=true
 fi
