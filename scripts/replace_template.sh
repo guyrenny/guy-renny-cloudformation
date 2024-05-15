@@ -67,6 +67,11 @@ if [[ $file == *"aws-shipper-lambda"* ]]; then
         - !Ref CustomDomain
         - !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]
       CoralogixApiKey: !If [ ApiKeyIsArn, !GetAtt SecretRetrievalFunctionTrigger.SecretValue, !Ref ApiKey ]" >> $file
+  echo "
+      # Parameters to track
+      IntegrationName: !Ref \"AWS::StackName\"
+      SubsystemName: !Ref SubsystemName
+      ApplicationName: !Ref ApplicationName" >> $file
 elif [[ $file == *"firehose"* ]]; then
   echo "
       CoralogixDomain: !If
@@ -74,6 +79,11 @@ elif [[ $file == *"firehose"* ]]; then
         - !Ref CustomDomain
         - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
       CoralogixApiKey: !Ref ApiKey" >> $file
+  echo "
+      # Parameters to track
+      IntegrationName: !Ref \"AWS::StackName\"
+      SubsystemName: !Ref SubsystemName
+      ApplicationName: !Ref ApplicationName" >> $file
 else
   echo "
       CoralogixDomain: !If
@@ -81,12 +91,10 @@ else
         - !Ref CustomDomain
         - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
       CoralogixApiKey: !Ref ApiKey" >> $file
-fi
-echo "
+  echo "
       # Parameters to track
-      IntegrationName: !Ref \"AWS::StackName\"
-      SubsystemName: !Ref SubsystemName
-      ApplicationName: !Ref ApplicationName" >> $file
+      IntegrationName: !Ref \"AWS::StackName\"" >> $file
+fi
 
 while IFS= read -r parameter; do
   if [[ $parameter != "ApiKey" ]] && [[ $parameter != "IntegrationId" ]] && [[ $parameter != "ApplicationName" ]] && [[ $parameter != "SubsystemName" ]] && [[ $parameter != "KafkaBrokers" ]] && [[ $parameter != "KafkaSubnets" ]] && [[ $parameter != "KafkaSecurityGroups" ]]; then
