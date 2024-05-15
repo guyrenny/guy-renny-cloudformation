@@ -67,10 +67,17 @@ if [[ $file == *"aws-shipper-lambda"* ]]; then
         - !Ref CustomDomain
         - !FindInMap [CoralogixRegionMap, !Ref CoralogixRegion, Domain]
       CoralogixApiKey: !If [ ApiKeyIsArn, !GetAtt SecretRetrievalFunctionTrigger.SecretValue, !Ref ApiKey ]" >> $file
-else
+elif [[ $file == *"firehose"* ]]; then
   echo "
       CoralogixDomain: !If
         - IsCustomDomain
+        - !Ref CustomDomain
+        - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+      CoralogixApiKey: !Ref ApiKey" >> $file
+else
+  echo "
+      CoralogixDomain: !If
+        - IsRegionCustomUrlEmpty
         - !Ref CustomDomain
         - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
       CoralogixApiKey: !Ref ApiKey" >> $file
