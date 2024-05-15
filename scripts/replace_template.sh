@@ -89,7 +89,7 @@ else
       CoralogixDomain: !If
         - IsRegionCustomUrlEmpty
         - !Ref CustomDomain
-        - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, LogUrl ]
+        - !FindInMap [ CoralogixRegionMap, !Ref CoralogixRegion, MetadataUrl ]
       CoralogixApiKey: !Ref ApiKey" >> $file
   echo "
       # Parameters to track
