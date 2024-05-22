@@ -1,9 +1,10 @@
-# Coralogix-Archive-Reader
-
+# DEPRECATED
+## Coralogix-Archive-Reader
 This template were created automatically from coralogix/coralogix-aws-serverless.
 To make a change in the template go to the link below.
 
 https://github.com/coralogix/coralogix-aws-serverless/tree/master/src/archive-reader
+
 
 This application imports archived logs from an S3 bucket to Coralogix.
 
