@@ -185,13 +185,12 @@ jobs:
       - name: Create pull request
         run: |
           pr_url=""
-          commit_message="test_commit_message"
+          commit_message="${{ github.event.head_commit.message }}"
           pr_name="sync from CF" # give the pr a defult name
           last_pr_from_serverless=$(curl "https://api.github.com/repos/coralogix/coralogix-aws-serverless/pulls?state=closed&base=master&sort=updated&direction=desc" \
           | jq -r '.[0].title')
           echo 1
-          last_pr_from_shipper=$(curl -s -H "Authorization: Bearer ${{ secrets.DESTINATION_REPO_TOKEN }}" \
-          "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          last_pr_from_shipper=$(curl "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
           | jq -r '.[0].title')
           echo 2
           if [[  $commit_message == $last_pr_from_serverless ]]; then
