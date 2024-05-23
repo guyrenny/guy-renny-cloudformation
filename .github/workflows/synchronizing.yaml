@@ -185,7 +185,7 @@ jobs:
       - name: Create pull request
         run: |
           pr_url=""
-          commit_message="${{ github.event.head_commit.message }}"
+          commit_message="test_commit_message"
           pr_name="sync from CF" # give the pr a defult name
           last_pr_from_serverless=$(curl -s -H "Authorization: Bearer ${{ secrets.DESTINATION_REPO_TOKEN }}" \
           "https://api.github.com/repos/coralogix/coralogix-aws-serverless/pulls?state=closed&base=master&sort=updated&direction=desc" \
