@@ -193,6 +193,8 @@ jobs:
           last_pr_from_shipper=$(curl "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
           | jq -r '.[0].title')
           echo 2
+          echo $last_pr_from_serverless
+          echo $last_pr_from_shipper
           if [[  $commit_message == $last_pr_from_serverless ]]; then
             pr_name=$last_pr_from_serverless
             pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.DESTINATION_REPO_TOKEN }}" \
