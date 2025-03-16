@@ -1,4 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
+
+
 Transform: AWS::Serverless-2016-10-31
 Description: |
   Send logs and metrics to Coralogix from AWS (S3, Cloudtrail, Cloudwatch, msk, SNS, SQS, Kinesis and more)
