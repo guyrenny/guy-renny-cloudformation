@@ -188,37 +188,38 @@ jobs:
 
       - name: Create pull request
         run: |
-          pr_url=""
-          pr_name="sync from CF" # give the pr a defult name
-          last_pr_from_serverless=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          "https://api.github.com/repos/coralogix/coralogix-aws-serverless/pulls?state=closed&base=master&sort=updated&direction=desc" \
-          | jq -r '.[0].title')
-          last_pr_from_shipper=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
-          | jq -r '.[0].title')
-          if [[  "${{ env.LAST_COMMIT_MESSAGE }}" == "$last_pr_from_serverless" ]]; then
-            pr_name=$last_pr_from_serverless
-            pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-            "https://api.github.com/repos/coralogix/coralogix-aws-serverless/pulls?state=closed&base=master&sort=updated&direction=desc" \
-            | jq -r '.[0].html_url')
-          elif [[ "${{ env.LAST_COMMIT_MESSAGE }}" == "$last_pr_from_shipper" ]]; then
-            pr_name=$last_pr_from_shipper
-            pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-            "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
-            | jq -r '.[0].html_url')
-          else # get the last pr from CF in case that the trigger to the sync was from CF 
-            pr_name=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          "https://api.github.com/repos/coralogix/cloudformation-coralogix-aws/pulls?state=closed&base=master&sort=updated&direction=desc" \
-          | jq -r '.[0].title')
-            pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-            "https://api.github.com/repos/coralogix/cloudformation-coralogix-aws/pulls?state=closed&base=master&sort=updated&direction=desc" \
-            | jq -r '.[0].html_url')
-          fi
-          pr_exists=$(gh pr list --base master --head "${{env.branch_name}}" --json number -q '.[].number')
-          if [[ -n "$pr_exists" ]]; then
-            echo "Pull request already exists: #$pr_exists"
-          else
-            gh pr create --base master --head "${{env.branch_name}}" --title "${pr_name}" --body "This pull request syncs the changes from the cloudformation repo to this repo. link to the original PR $pr_url. **dummy ticket to pass ticket validate[CDS-1708]** "
-          fi
+          # pr_url=""
+          # pr_name="sync from CF" # give the pr a defult name
+          # last_pr_from_serverless=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          # "https://api.github.com/repos/coralogix/coralogix-aws-serverless/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          # | jq -r '.[0].title')
+          # last_pr_from_shipper=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          # "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          # | jq -r '.[0].title')
+          # if [[  "${{ env.LAST_COMMIT_MESSAGE }}" == "$last_pr_from_serverless" ]]; then
+          #   pr_name=$last_pr_from_serverless
+          #   pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          #   "https://api.github.com/repos/coralogix/coralogix-aws-serverless/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          #   | jq -r '.[0].html_url')
+          # elif [[ "${{ env.LAST_COMMIT_MESSAGE }}" == "$last_pr_from_shipper" ]]; then
+          #   pr_name=$last_pr_from_shipper
+          #   pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          #   "https://api.github.com/repos/coralogix/coralogix-aws-shipper/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          #   | jq -r '.[0].html_url')
+          # else # get the last pr from CF in case that the trigger to the sync was from CF 
+          #   pr_name=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          # "https://api.github.com/repos/coralogix/cloudformation-coralogix-aws/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          # | jq -r '.[0].title')
+          #   pr_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          #   "https://api.github.com/repos/coralogix/cloudformation-coralogix-aws/pulls?state=closed&base=master&sort=updated&direction=desc" \
+          #   | jq -r '.[0].html_url')
+          # fi
+          # pr_exists=$(gh pr list --base master --head "${{env.branch_name}}" --json number -q '.[].number')
+          # if [[ -n "$pr_exists" ]]; then
+          #   echo "Pull request already exists: #$pr_exists"
+          # else
+          #   gh pr create --base master --head "${{env.branch_name}}" --title "${pr_name}" --body "This pull request syncs the changes from the cloudformation repo to this repo. link to the original PR $pr_url. **dummy ticket to pass ticket validate[CDS-1708]** "
+          # fi
+          gh pr create --base master --head "${{env.branch_name}}" --title "test-pr" --body "This pull request syncs the changes from the cloudformation repo to this repo. link to the original PR $pr_url. **dummy ticket to pass ticket validate[CDS-1708]** "
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
